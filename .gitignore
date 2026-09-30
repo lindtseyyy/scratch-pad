@@ -1,0 +1,43 @@
+# Dependencies and build output
+node_modules/
+dist/
+.vite/
+.cache/
+.npm/
+*.tsbuildinfo
+
+# Local environment and private Supabase signing keys
+.env
+.env.*
+!.env.example
+*.local
+supabase/signing_keys.json
+
+# Supabase CLI state
+supabase/.temp/
+supabase/.branches/
+
+# Test results and coverage
+playwright-report/
+playwright/.cache/
+blob-report/
+test-results/
+coverage/
+.nyc_output/
+
+# Local scratch files, logs, and tool caches
+.local/
+logs/
+*.log
+.eslintcache
+.prettiercache
+
+# Personal editor and operating-system files
+.idea/
+.history/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
