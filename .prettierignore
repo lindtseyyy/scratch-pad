@@ -1,0 +1,8 @@
+node_modules
+dist
+package-lock.json
+src/lib/database.types.ts
+supabase/.temp
+test-results
+playwright-report
+DEVELOPMENT_PLAN.md
