@@ -20,9 +20,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const dark = theme === 'dark' || (theme === 'system' && media.matches)
       document.documentElement.classList.toggle('dark', dark)
       document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
-      document
-        .querySelector('meta[name="theme-color"]')
-        ?.setAttribute('content', dark ? '#181b18' : '#f8f8f7')
+      document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+        meta.setAttribute('content', dark ? '#181b18' : '#f8f8f7')
+      })
     }
     apply()
     try {

@@ -5,7 +5,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from '@headlessui/react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, X } from 'lucide-react'
 import { normalizeTag } from '../../lib/tags'
 import { errorMessage } from '../../lib/errors'
@@ -14,6 +14,7 @@ export function TagInput({
   value,
   onChange,
   suggestions,
+  popularTags = [],
   allowCreate = true,
   disabled = false,
 }: {
@@ -21,12 +22,28 @@ export function TagInput({
   value: string[]
   onChange: (tags: string[]) => void
   suggestions: string[]
+  popularTags?: string[]
   allowCreate?: boolean
   disabled?: boolean
 }) {
   const [query, setQuery] = useState('')
   const [error, setError] = useState('')
+  const [focused, setFocused] = useState(false)
+  const [showPopular, setShowPopular] = useState(false)
+  const fieldRef = useRef<HTMLDivElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!focused || !matchMedia('(pointer: coarse)').matches) return
+    const scroll = () => fieldRef.current?.scrollIntoView({ block: 'center' })
+    // Recenter after the virtual keyboard has resized the visible viewport.
+    const timer = setTimeout(scroll, 300)
+    scroll()
+    window.visualViewport?.addEventListener('resize', scroll)
+    return () => {
+      clearTimeout(timer)
+      window.visualViewport?.removeEventListener('resize', scroll)
+    }
+  }, [focused])
   const matches = suggestions.filter(
     (name) => !value.includes(name) && name.includes(query.trim().toLowerCase()),
   )
@@ -45,19 +62,24 @@ export function TagInput({
     }
   }
   return (
-    <div>
-      <div className="mb-2 flex flex-wrap gap-1.5">
+    <div
+      ref={fieldRef}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)
+      }}
+    >
+      <div className="mb-2 flex flex-wrap gap-1.5 touch:gap-2">
         {value.map((name) => (
           <span key={name} className="tag">
-            {name}
+            <span className="min-w-0 [overflow-wrap:anywhere]">{name}</span>
             <button
               type="button"
-              className="ml-0.5 rounded p-0.5 hover:text-ink"
+              className="tap ml-0.5 rounded p-0.5 hover:text-ink"
               disabled={disabled}
               aria-label={`Remove tag ${name}`}
               onClick={() => onChange(value.filter((tag) => tag !== name))}
             >
-              <X size={12} aria-hidden="true" />
+              <X size={12} className="touch:size-4" aria-hidden="true" />
             </button>
           </span>
         ))}
@@ -68,9 +90,16 @@ export function TagInput({
             <div className="relative">
               <ComboboxInput
                 id={id}
-                className="input pr-9"
+                className="input pr-11"
                 placeholder={allowCreate ? 'Find or create a tag…' : 'Add a tag filter…'}
                 value={query}
+                onFocus={() => {
+                  setFocused(true)
+                  setShowPopular(true)
+                }}
+                enterKeyHint="done"
+                autoCapitalize="none"
+                autoCorrect="off"
                 onChange={(e) => {
                   setQuery(e.target.value)
                   setError('')
@@ -92,7 +121,7 @@ export function TagInput({
               />
               <ComboboxButton
                 ref={toggleRef}
-                className="absolute right-1 top-1 rounded p-2 text-muted hover:text-ink"
+                className="tap absolute right-0 top-0 rounded p-2 text-muted hover:text-ink"
                 aria-label={allowCreate ? 'Show tag suggestions' : 'Show tag filters'}
               >
                 <ChevronDown size={15} aria-hidden="true" />
@@ -105,7 +134,7 @@ export function TagInput({
                   <ComboboxOption
                     value={name}
                     key={name}
-                    className="flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm data-focus:bg-soft"
+                    className="menu-item cursor-pointer break-all"
                   >
                     {name}
                   </ComboboxOption>
@@ -113,7 +142,7 @@ export function TagInput({
                 {canCreate && (
                   <ComboboxOption
                     value={normalized}
-                    className="cursor-pointer rounded px-3 py-2 text-sm text-accent data-focus:bg-soft"
+                    className="menu-item cursor-pointer break-all text-accent"
                   >
                     Create “{normalized}”
                   </ComboboxOption>
@@ -128,6 +157,31 @@ export function TagInput({
           </>
         )}
       </Combobox>
+      {showPopular && popularTags.some((name) => !value.includes(name)) && (
+        <div
+          role="group"
+          aria-label="Most-used tags"
+          // Keep the chip area in place after blur so the Save target cannot move
+          // between pointerdown and click. Typed suggestions occupy the same area.
+          className={`mt-2 hidden flex-wrap gap-2 touch:flex ${query.trim() ? 'invisible' : ''}`}
+        >
+          {popularTags
+            .filter((name) => !value.includes(name))
+            .map((name) => (
+              <button
+                key={name}
+                type="button"
+                className="tag break-all hover:bg-accent-soft hover:text-accent"
+                disabled={disabled}
+                aria-label={`Add tag ${name}`}
+                onPointerDown={(event) => event.preventDefault()}
+                onClick={() => add(name)}
+              >
+                {name}
+              </button>
+            ))}
+        </div>
+      )}
       <p
         id={`${id}-hint`}
         className={`mt-1.5 text-xs ${error ? 'text-danger' : 'text-muted'}`}

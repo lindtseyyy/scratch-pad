@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant touch (@media (pointer: coarse));
+@custom-variant fine (@media (pointer: fine));
 
 :root {
   --canvas: #f8f8f7;
@@ -70,7 +72,7 @@
 }
 @layer components {
   .button {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-transparent px-3 py-2 text-sm font-medium transition-colors duration-100 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-transparent px-3 py-2 text-sm font-medium transition-colors duration-100 disabled:cursor-not-allowed disabled:opacity-50 touch:min-h-11 touch:min-w-11;
   }
   .button-primary {
     @apply bg-accent text-surface hover:bg-accent-hover dark:text-canvas;
@@ -85,16 +87,23 @@
     @apply border-line bg-surface text-danger hover:bg-soft;
   }
   .input {
-    @apply block min-h-10 w-full rounded-md border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted disabled:opacity-60 sm:text-sm;
+    @apply block min-h-10 w-full rounded-md border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted disabled:opacity-60 touch:min-h-11 fine:text-sm;
   }
   .tag {
-    @apply inline-flex items-center gap-1 rounded-sm bg-soft px-2 py-0.5 text-xs text-secondary;
+    @apply inline-flex max-w-full items-center gap-1 rounded-sm bg-soft px-2 py-0.5 text-xs text-secondary touch:py-1 touch:text-sm;
+  }
+  button.tag,
+  a.tag {
+    @apply touch:min-h-11 touch:min-w-11;
+  }
+  .tap {
+    @apply relative inline-flex shrink-0 items-center justify-center touch:min-h-11 touch:min-w-11;
   }
   .menu-item {
-    @apply flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm data-focus:bg-soft;
+    @apply flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm data-focus:bg-soft touch:min-h-11 touch:py-3;
   }
   .page {
-    @apply mx-auto w-full max-w-[908px] px-5 py-8 sm:px-6 sm:py-10;
+    @apply mx-auto w-full max-w-[908px] pb-8 pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pt-5 sm:pb-10 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:pt-10;
   }
 }
 @media (prefers-reduced-motion: reduce) {

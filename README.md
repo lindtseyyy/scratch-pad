@@ -62,7 +62,9 @@ The local API is on port 54321 and Postgres on 54322. Local Supabase uses the sa
 - Inline tag creation/autocomplete and a tag management page with usage counts, rename, and delete without removing links.
 - Literal text search across title, URL, source, and note; match-all tag filters; source filters; newest/oldest/title sorting. Filter state survives reloads and browser navigation through URL parameters.
 - System/light/dark themes persisted locally with theme applied before React loads.
-- Responsive filter controls and full-screen mobile dialogs, accessible keyboard menus/comboboxes, focus-trapped dialogs, and visible focus indicators.
+- Responsive filter controls, sticky phone search, removable active-filter chips, and expandable tag rows. Wide libraries include a sticky tag sidebar.
+- Touch targets of at least 44px and 16px touch inputs, including tablets. Phone link dialogs keep Save in the header; confirmations use safe-area-aware bottom sheets. Keyboard hints appear on devices with a fine pointer.
+- Accessible keyboard menus/comboboxes, focus-trapped dialogs, and visible focus indicators. Touch link forms offer the eight most-used tags and move Tags above Note and Source.
 - Library shortcuts: `/` focuses search, `n` opens Add, and Ctrl/Command + Enter saves. Paste a web URL while outside an input to open Add.
 
 The plan's “Later” features (PWA sharing, bookmarklets, bulk import, metadata fetching, export, favorites, real-email recovery) remain outside this MVP.
@@ -77,10 +79,12 @@ npm run build
 npm run db:start
 npm run db:test      # SQL isolation checks and real Auth/REST/RPC integration
 npm run db:test:hosted # Optional: integration on the linked hosted project
-npm run test:e2e     # Chrome desktop and mobile browser flows against local Supabase
+npm run test:e2e     # Desktop, Pixel 7, 320px phone, and iPad Mini against local Supabase
 ```
 
-The browser suite uses installed Google Chrome and a separate Vite server on port 5174. It passes local public connection details directly to that server, so your hosted `.env.local` stays intact. Test accounts are removed from the local database afterward. Screenshots and failure traces stay in gitignored `.local/` and `test-results/` directories.
+The browser suite uses installed Google Chrome and a separate Vite server on port 5174. It passes local public connection details directly to that server, so your hosted `.env.local` stays intact. Test accounts are removed from the local database afterward. Screenshots and failure traces stay in gitignored `.local/` and `test-results/` directories. Responsive light/dark screenshots are saved to `.local/responsive/`; the suite checks overflow, touch sizing, touch input fonts, keyboard hints, filter chips, sticky search, sidebar filters, and dialog actions.
+
+The implementation follows [RESPONSIVE_PLAN.md](RESPONSIVE_PLAN.md), including the optional wide-screen sidebar. Physical-device keyboard behavior, iPhone safe areas and input zoom, browser toolbar colors, and native desktop text zoom still need the manual checklist in that plan. To test from a phone on the same network, run `npx vite --host 0.0.0.0` and open `http://<computer-ip>:5173`.
 
 The optional hosted integration creates temporary test accounts and data, checks the configured server password policy and API isolation, then removes only its own test accounts through the authenticated CLI. It checks that the linked project matches `.env.local` first. On Linux, a headless terminal may need its desktop keyring connection restored with `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus` before CLI operations.
 
@@ -89,6 +93,8 @@ The optional hosted integration creates temporary test accounts and data, checks
 The generated `src/lib/database.types.ts` matches the local schema. Regenerate it with `npm run db:types` after schema changes; the script preserves the previous file if generation fails.
 
 Verified on September 30, 2026: 23 unit tests and four desktop/mobile browser tests passed, with no WCAG 2.1 A/AA violations found on the checked login, dialog, and light/dark library screens. TypeScript, ESLint, Prettier, the production build, local database lint, and both local and hosted security/integration checks passed. Hosted RLS SQL assertions ran inside a rolled-back transaction. Temporary accounts and test services were cleaned up; the hosted connection and local app server remain ready to use.
+
+Responsive verification on September 30, 2026: all 23 unit tests and 12 browser tests passed across desktop, Pixel 7, 320px phone, and iPad Mini projects. Lint, formatting, and the production build passed. Responsive checks include landscape dialogs and enlarged desktop text; physical-device checks remain pending as described above.
 
 ## Database decisions
 
@@ -101,4 +107,5 @@ Column grants protect `user_id`, IDs, `created_at`, and `updated_at` from client
 Build with `npm run build` and publish `dist/` to your preferred static host. Set the three `VITE_*` values in the host's build environment before building, then set the Supabase Auth Site URL to the final HTTPS address. The public key is expected to be visible in the built JavaScript; data isolation is enforced by RLS.
 
 Vercel can use `vercel.json`; Netlify and Cloudflare Pages can use the included `public/_redirects`. Use the build command `npm run build` and output directory `dist`. The fallback serves `index.html` for routes such as `/tags` and `/settings`. No hosting account or target was provided, so this workspace does not create a public deployment.
+
 # scratch-pad

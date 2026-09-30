@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { Bookmark, ChevronDown, LogOut, Monitor, Moon, Sun } from 'lucide-react'
+import { Bookmark, ChevronDown, LogOut, Monitor, Moon, Sun, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '../../features/auth/AuthProvider'
 import { useTheme } from '../../hooks/useTheme'
@@ -26,10 +26,10 @@ export function AppLayout() {
         Skip to content
       </a>
       <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-[908px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-[908px] flex-wrap items-center justify-between gap-x-4 gap-y-1 pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] py-3 sm:gap-y-3 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:py-4 lg:max-w-[1168px]">
           <NavLink
             to="/"
-            className="flex items-center gap-2 text-base font-semibold tracking-tight"
+            className="flex items-center gap-2 text-base font-semibold tracking-tight touch:min-h-11"
           >
             <Bookmark size={18} className="text-accent" aria-hidden="true" />
             Scratch-Pad
@@ -38,7 +38,7 @@ export function AppLayout() {
             <Button
               type="button"
               variant="ghost"
-              className="px-2"
+              className="px-2 touch:min-h-11 touch:min-w-11"
               onClick={cycle}
               aria-label={`Theme: ${theme}. Cycle theme.`}
               title={`Theme: ${theme}`}
@@ -47,11 +47,11 @@ export function AppLayout() {
             </Button>
             <Menu>
               <MenuButton
-                className="flex min-h-10 items-center gap-1.5 rounded px-2 text-sm text-secondary hover:bg-soft"
+                className="flex min-h-10 items-center gap-1.5 rounded px-2 text-sm text-secondary hover:bg-soft touch:min-h-11 touch:min-w-11"
                 aria-label="Account menu"
               >
                 <span className="hidden max-w-24 truncate sm:inline">{username}</span>
-                <span className="sm:hidden">Account</span>
+                <UserRound size={17} className="sm:hidden" aria-hidden="true" />
                 <ChevronDown size={13} aria-hidden="true" />
               </MenuButton>
               <MenuItems
@@ -93,7 +93,7 @@ export function AppLayout() {
                 key={path}
                 to={path}
                 className={({ isActive }) =>
-                  `rounded py-1 font-medium ${isActive ? 'text-accent underline decoration-accent/40 underline-offset-8' : 'text-muted hover:text-ink'}`
+                  `inline-flex items-center rounded py-1 font-medium touch:min-h-11 touch:min-w-11 ${isActive ? 'text-accent underline decoration-accent/40 underline-offset-8' : 'text-muted hover:text-ink'}`
                 }
               >
                 {label}

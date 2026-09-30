@@ -59,6 +59,12 @@ export function LinkFormDialog({
   }
   return (
     <Modal
+      variant="page"
+      compactAction={
+        <Button type="submit" form="link-form" disabled={save.isPending || !url.trim()}>
+          {save.isPending ? 'Saving…' : link ? 'Save changes' : 'Save link'}
+        </Button>
+      }
       title={link ? 'Edit link' : 'Save for later'}
       description={
         link
@@ -70,6 +76,7 @@ export function LinkFormDialog({
       }}
     >
       <form
+        id="link-form"
         onSubmit={submit}
         className="space-y-4"
         onKeyDown={(event) => {
@@ -102,6 +109,8 @@ export function LinkFormDialog({
               placeholder="https://example.com/something-good"
               autoComplete="url"
               inputMode="url"
+              autoCapitalize="none"
+              spellCheck={false}
             />
           </Field>
           {duplicate.data && (
@@ -115,7 +124,7 @@ export function LinkFormDialog({
               .{' '}
               <button
                 type="button"
-                className="font-medium text-accent underline"
+                className="tap font-medium text-accent underline"
                 onClick={() => onEditDuplicate(duplicate.data!)}
               >
                 Edit the saved link
@@ -138,6 +147,34 @@ export function LinkFormDialog({
               aria-describedby="link-title-hint"
             />
           </Field>
+          <Field id="link-tags" label="Tags">
+            <TagInput
+              id="link-tags"
+              value={tagNames}
+              onChange={setTagNames}
+              suggestions={(tags.data || []).map((tag) => tag.name)}
+              popularTags={[...(tags.data || [])]
+                .sort((a, b) => b.link_count - a.link_count || a.name.localeCompare(b.name))
+                .slice(0, 8)
+                .map((tag) => tag.name)}
+              disabled={save.isPending}
+            />
+          </Field>
+          {tags.isError && (
+            <p className="text-xs text-danger">
+              Existing tags couldn’t load. You can still enter tags by name.
+            </p>
+          )}
+          <Field id="link-description" label="Note (optional)">
+            <Textarea
+              id="link-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={5000}
+              rows={3}
+              placeholder="Why you saved it, or what to come back to…"
+            />
+          </Field>
           <Field id="link-source" label="Source">
             <Input
               id="link-source"
@@ -150,33 +187,9 @@ export function LinkFormDialog({
               placeholder="Detected from your link"
             />
           </Field>
-          <Field id="link-description" label="Note (optional)">
-            <Textarea
-              id="link-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={5000}
-              rows={3}
-              placeholder="Why you saved it, or what to come back to…"
-            />
-          </Field>
-          <Field id="link-tags" label="Tags">
-            <TagInput
-              id="link-tags"
-              value={tagNames}
-              onChange={setTagNames}
-              suggestions={(tags.data || []).map((tag) => tag.name)}
-              disabled={save.isPending}
-            />
-          </Field>
-          {tags.isError && (
-            <p className="text-xs text-danger">
-              Existing tags couldn’t load. You can still enter tags by name.
-            </p>
-          )}
         </fieldset>
-        <div className="flex items-center justify-between gap-4 border-t border-line pt-4">
-          <span className="hidden text-xs text-muted sm:block">Ctrl / ⌘ + Enter to save</span>
+        <div className="sticky bottom-0 hidden items-center justify-between gap-4 border-t border-line bg-surface py-4 sm:flex">
+          <span className="hidden text-xs text-muted fine:block">Ctrl / ⌘ + Enter to save</span>
           <div className="ml-auto flex gap-2">
             <Button variant="secondary" type="button" onClick={onClose} disabled={save.isPending}>
               Cancel

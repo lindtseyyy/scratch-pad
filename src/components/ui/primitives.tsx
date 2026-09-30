@@ -81,11 +81,15 @@ export function Modal({
   title,
   description,
   onClose,
+  variant = 'page',
+  compactAction,
   children,
 }: {
   title: string
   description?: string
   onClose: () => void
+  variant?: 'page' | 'sheet'
+  compactAction?: ReactNode
   children: ReactNode
 }) {
   const panelRef = useRef<HTMLDivElement>(null)
@@ -106,26 +110,34 @@ export function Modal({
         <div className="flex min-h-full items-end justify-center sm:items-center sm:p-6">
           <DialogPanel
             ref={panelRef}
-            className="min-h-dvh w-full max-w-lg border border-line bg-surface p-5 sm:min-h-0 sm:rounded-lg sm:p-6"
+            data-modal-panel
+            className={`flex max-h-dvh w-full flex-col border border-line bg-surface sm:max-h-[calc(100dvh-3rem)] sm:max-w-lg sm:rounded-lg ${variant === 'page' ? 'h-dvh sm:h-auto' : 'rounded-t-xl'}`}
           >
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <div>
-                <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
-                {description && (
-                  <Description className="mt-1 text-sm text-muted">{description}</Description>
-                )}
-              </div>
+            <div
+              className={`flex shrink-0 items-center gap-3 bg-surface pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:pt-4 ${variant === 'page' ? 'border-b border-line pb-3 sm:border-0 sm:pb-0' : 'pt-5'}`}
+            >
               <Button
                 type="button"
                 variant="ghost"
                 aria-label="Close dialog"
                 onClick={onClose}
-                className="-mr-2 -mt-2 px-2"
+                className={`shrink-0 px-2 sm:order-3 sm:-mr-2 ${variant === 'sheet' ? 'order-3 -mr-2' : '-ml-2 sm:ml-0'}`}
               >
                 <X size={18} aria-hidden="true" />
               </Button>
+              <DialogTitle className="min-w-0 flex-1 break-words text-lg font-semibold">
+                {title}
+              </DialogTitle>
+              {compactAction && <div className="shrink-0 sm:hidden">{compactAction}</div>}
             </div>
-            {children}
+            <div className="min-h-0 overflow-y-auto pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
+              {description && (
+                <Description className="mb-5 break-words text-sm text-muted">
+                  {description}
+                </Description>
+              )}
+              {children}
+            </div>
           </DialogPanel>
         </div>
       </div>

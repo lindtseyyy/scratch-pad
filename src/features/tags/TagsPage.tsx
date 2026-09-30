@@ -72,14 +72,14 @@ function TagRow({ tag, onDelete }: { tag: Tag; onDelete: () => void }) {
             <Link className="tag break-all hover:text-accent" to={tagLibraryUrl(tag.name)}>
               {tag.name}
             </Link>
-            <span className="text-xs text-muted">
+            <span className="shrink-0 text-xs text-muted">
               {tag.link_count} {tag.link_count === 1 ? 'link' : 'links'}
             </span>
           </div>
-          <div className="flex gap-1">
+          <div className="flex shrink-0 gap-1">
             <Button
               variant="ghost"
-              className="px-2"
+              className="px-2 touch:min-w-11"
               aria-label={`Rename ${tag.name}`}
               onClick={() => {
                 setName(tag.name)
@@ -90,7 +90,7 @@ function TagRow({ tag, onDelete }: { tag: Tag; onDelete: () => void }) {
             </Button>
             <Button
               variant="ghost"
-              className="px-2 text-danger"
+              className="px-2 text-danger touch:min-w-11"
               aria-label={`Delete ${tag.name}`}
               onClick={onDelete}
             >
@@ -126,7 +126,7 @@ export function TagsPage() {
     <main id="main" className="page">
       <h1 className="text-2xl font-semibold tracking-tight">Tags</h1>
       <p className="mt-1 text-sm text-muted">A little order for everything you collect.</p>
-      <div className="mt-7 flex flex-wrap items-end justify-between gap-4">
+      <div className="mt-7 flex flex-col items-end justify-between gap-4 sm:flex-row sm:flex-wrap">
         <form
           onSubmit={async (event) => {
             event.preventDefault()
@@ -139,7 +139,7 @@ export function TagsPage() {
               setError(errorMessage(error))
             }
           }}
-          className="flex min-w-0 flex-1 gap-2"
+          className="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-1"
         >
           <label htmlFor="new-tag" className="sr-only">
             New tag name
@@ -151,9 +151,14 @@ export function TagsPage() {
             onChange={(e) => setName(e.target.value)}
             maxLength={32}
             disabled={create.isPending}
-            className="max-w-xs"
+            className="min-w-0 flex-1 sm:max-w-xs"
           />
-          <Button type="submit" variant="secondary" disabled={!name.trim() || create.isPending}>
+          <Button
+            type="submit"
+            variant="secondary"
+            className="shrink-0"
+            disabled={!name.trim() || create.isPending}
+          >
             Add tag
           </Button>
         </form>
@@ -202,6 +207,7 @@ export function TagsPage() {
       </div>
       {deleting && (
         <Modal
+          variant="sheet"
           title={`Delete “${deleting.name}”?`}
           description={`This removes the tag from ${deleting.link_count} ${deleting.link_count === 1 ? 'link' : 'links'}. All of your links will be kept.`}
           onClose={() => {
@@ -209,7 +215,7 @@ export function TagsPage() {
           }}
         >
           {deleteError && <InlineError>{deleteError}</InlineError>}
-          <div className="mt-6 flex justify-end gap-2">
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button
               variant="secondary"
               data-autofocus

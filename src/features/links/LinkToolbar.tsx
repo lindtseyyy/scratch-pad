@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { Button, Input, Select } from '../../components/ui/primitives'
 import { TagInput } from '../tags/TagInput'
 import type { Tag } from './api'
@@ -52,10 +52,20 @@ export function LinkToolbar({
   }, [location.key, location.state, navigationType])
   const active =
     !!filters.query || !!filters.tags.length || !!filters.source || filters.sort !== 'newest'
+  const filterCount =
+    filters.tags.length + Number(!!filters.source) + Number(filters.sort !== 'newest')
+  const clearFilters = () => {
+    clearTimeout(timer.current)
+    setDraft({ query: '', urlQuery: '' })
+    clear()
+  }
   return (
-    <div className="mb-3 space-y-3 border-b border-line pb-5">
-      <div className="flex gap-2">
-        <div className="relative min-w-0 flex-1">
+    <>
+      <div
+        data-search-row
+        className="sticky top-0 z-10 mb-3 flex gap-2 border-b border-line bg-canvas py-3 sm:static sm:flex-wrap sm:border-0 sm:py-0"
+      >
+        <div className="relative min-w-0 flex-1 sm:min-w-48">
           <Search
             size={16}
             className="pointer-events-none absolute left-3 top-3 text-muted"
@@ -65,7 +75,7 @@ export function LinkToolbar({
             ref={searchRef}
             aria-label="Search links"
             placeholder="Search your links…"
-            className="pl-9"
+            className="pl-9 fine:pr-9"
             value={draft.urlQuery === filters.query ? draft.query : filters.query}
             onChange={(event) => {
               const query = event.target.value
@@ -74,30 +84,27 @@ export function LinkToolbar({
               timer.current = setTimeout(() => latestUpdate.current({ query }, true), 250)
             }}
           />
-          <kbd className="pointer-events-none absolute right-3 top-2.5 hidden rounded border border-line px-1.5 text-xs text-muted sm:block">
+          <kbd className="pointer-events-none absolute right-3 top-2.5 hidden rounded border border-line px-1.5 text-xs text-muted fine:block">
             /
           </kbd>
         </div>
         <Button
           variant="secondary"
-          className="sm:hidden"
+          className="shrink-0 gap-1.5 sm:hidden"
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
           aria-controls="library-filters"
         >
           <SlidersHorizontal size={16} aria-hidden="true" />
-          Filters
-          {(filters.tags.length > 0 || filters.source) && (
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-          )}
+          Filters{filterCount > 0 ? ` · ${filterCount}` : ''}
         </Button>
-        <div className="hidden items-center gap-2 sm:flex">
+        <div className="hidden min-w-0 flex-wrap items-center gap-2 sm:flex">
           <label htmlFor="desktop-source" className="sr-only">
             Source
           </label>
           <Select
             id="desktop-source"
-            className="w-40"
+            className="w-40 max-w-full"
             value={filters.source}
             onChange={(e) => update({ source: e.target.value })}
           >
@@ -113,7 +120,7 @@ export function LinkToolbar({
           </label>
           <Select
             id="desktop-sort"
-            className="w-32"
+            className="w-32 max-w-full"
             value={filters.sort}
             onChange={(e) => update({ sort: e.target.value as Sort })}
           >
@@ -123,7 +130,60 @@ export function LinkToolbar({
           </Select>
         </div>
       </div>
-      <div id="library-filters" className={`${expanded ? 'block' : 'hidden'} space-y-3 sm:block`}>
+      {!expanded && active && (
+        <div
+          role="group"
+          aria-label="Active filters"
+          className="mb-3 flex items-center gap-2 overflow-x-auto pb-1 sm:hidden"
+        >
+          {filters.tags.map((name) => (
+            <button
+              key={name}
+              type="button"
+              className="tag shrink-0 gap-2"
+              aria-label={`Remove tag filter ${name}`}
+              onClick={() => update({ tags: filters.tags.filter((tag) => tag !== name) })}
+            >
+              <span className="max-w-40 truncate">{name}</span>
+              <X size={14} aria-hidden="true" />
+            </button>
+          ))}
+          {filters.source && (
+            <button
+              type="button"
+              className="tag shrink-0 gap-2"
+              aria-label={`Remove source filter ${filters.source}`}
+              onClick={() => update({ source: '' })}
+            >
+              <span className="max-w-40 truncate">{filters.source}</span>
+              <X size={14} aria-hidden="true" />
+            </button>
+          )}
+          {filters.sort !== 'newest' && (
+            <button
+              type="button"
+              className="tag shrink-0 gap-2"
+              aria-label="Reset sort to newest"
+              onClick={() => update({ sort: 'newest' })}
+            >
+              {filters.sort === 'oldest' ? 'Oldest' : 'Title A–Z'}
+              <X size={14} aria-hidden="true" />
+            </button>
+          )}
+          <Button
+            variant="ghost"
+            className="shrink-0 px-2 text-xs"
+            aria-label="Clear filters"
+            onClick={clearFilters}
+          >
+            Clear
+          </Button>
+        </div>
+      )}
+      <div
+        id="library-filters"
+        className={`${expanded ? 'block' : 'hidden'} mb-3 space-y-3 border-b border-line pb-5 sm:block`}
+      >
         <div className="flex gap-2 sm:hidden">
           <div className="min-w-0 flex-1">
             <label htmlFor="mobile-source" className="mb-1 block text-xs text-muted">
@@ -173,11 +233,7 @@ export function LinkToolbar({
           {active && (
             <Button
               variant="ghost"
-              onClick={() => {
-                clearTimeout(timer.current)
-                setDraft({ query: '', urlQuery: '' })
-                clear()
-              }}
+              onClick={clearFilters}
               className="mt-2 whitespace-nowrap px-1 text-xs"
             >
               Clear filters
@@ -185,6 +241,6 @@ export function LinkToolbar({
           )}
         </div>
       </div>
-    </div>
+    </>
   )
 }

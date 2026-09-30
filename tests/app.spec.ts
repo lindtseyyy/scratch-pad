@@ -11,6 +11,7 @@ const local = JSON.parse(
   }),
 )
 test('account, library, tags, filters, themes and password changes', async ({ page }, testInfo) => {
+  const compact = (page.viewportSize()?.width || 0) < 640
   const username = `e2e_${testInfo.project.name}_${Date.now().toString(36)}`
   const password = 'TestPassword12!'
   const checkAccessibility = async () => {
@@ -76,8 +77,7 @@ test('account, library, tags, filters, themes and password changes', async ({ pa
     await edited.getByRole('button', { name: 'Filter by backend' }).click()
     await expect(page).toHaveURL(/tags=backend/)
     await expect(page.getByRole('article')).toHaveCount(1)
-    if (testInfo.project.name === 'mobile')
-      await page.getByRole('button', { name: 'Filters' }).click()
+    if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
     await page.getByLabel('Filter by tags').fill('video')
     await page.getByRole('option', { name: 'video', exact: true }).click()
     await expect(page.getByText('No links match just yet.')).toBeVisible()
@@ -89,8 +89,7 @@ test('account, library, tags, filters, themes and password changes', async ({ pa
     await page.reload()
     await expect(page.getByLabel('Search links')).toHaveValue('handbook')
     await expect(page.getByRole('article')).toHaveCount(1)
-    if (testInfo.project.name === 'mobile')
-      await page.getByRole('button', { name: 'Filters' }).click()
+    if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
     await page.getByRole('button', { name: 'Clear filters', exact: true }).first().click()
     await page.getByRole('link', { name: 'Tags', exact: true }).click()
     await page.getByRole('button', { name: 'Rename backend', exact: true }).click()
@@ -106,7 +105,10 @@ test('account, library, tags, filters, themes and password changes', async ({ pa
     await expect(page.getByRole('button', { name: 'Filter by development' })).toBeVisible()
     await expect(page.getByRole('article')).toHaveCount(2)
     mkdirSync('.local', { recursive: true })
-    await page.screenshot({ path: `.local/${testInfo.project.name}-library.png`, fullPage: true })
+    await page.screenshot({
+      path: `.local/${testInfo.project.name}-library.png`,
+      fullPage: !testInfo.project.use.hasTouch,
+    })
     await checkAccessibility()
     await expect(page.locator('body')).toHaveJSProperty(
       'scrollWidth',
@@ -137,7 +139,10 @@ test('account, library, tags, filters, themes and password changes', async ({ pa
     await page.getByRole('menuitem', { name: 'Delete' }).click()
     await page.getByRole('button', { name: 'Delete link', exact: true }).click()
     await expect(page.getByRole('article')).toHaveCount(1)
-    await page.screenshot({ path: `.local/${testInfo.project.name}-dark.png`, fullPage: true })
+    await page.screenshot({
+      path: `.local/${testInfo.project.name}-dark.png`,
+      fullPage: !testInfo.project.use.hasTouch,
+    })
     await checkAccessibility()
     if (testInfo.project.name === 'desktop') {
       await page.locator('body').click({ position: { x: 5, y: 500 } })
@@ -185,6 +190,7 @@ test('account, library, tags, filters, themes and password changes', async ({ pa
 test('browser history, rapid filtering, shortcuts and account cache isolation', async ({
   page,
 }, testInfo) => {
+  const compact = (page.viewportSize()?.width || 0) < 640
   const prefix = `nav_${testInfo.project.name}_${Date.now().toString(36)}`
   const password = 'TestPassword12!'
   const clients = [0, 1].map(() =>
@@ -237,13 +243,12 @@ test('browser history, rapid filtering, shortcuts and account cache isolation', 
     await expect(page.getByRole('alert')).toHaveText(
       'Only http:// and https:// links can be saved.',
     )
-    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
-    if (testInfo.project.name === 'mobile')
-      await page.getByRole('button', { name: 'Filters' }).click()
+    await page
+      .getByRole('button', { name: compact ? 'Close dialog' : 'Cancel', exact: true })
+      .click()
+    if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
     await page.getByLabel('Search links').fill('Alpha')
-    const source = page.locator(
-      testInfo.project.name === 'mobile' ? '#mobile-source' : '#desktop-source',
-    )
+    const source = page.locator(compact ? '#mobile-source' : '#desktop-source')
     await source.selectOption('GitHub')
     await expect(page).toHaveURL(/q=Alpha/)
     await expect(source).toHaveValue('GitHub')
@@ -258,12 +263,11 @@ test('browser history, rapid filtering, shortcuts and account cache isolation', 
     await expect(page.getByLabel('Search links')).toHaveValue('Alpha')
     await expect(page.getByRole('article')).toHaveCount(1)
     await page.getByRole('button', { name: 'Clear filters', exact: true }).first().click()
-    const sort = page.locator(testInfo.project.name === 'mobile' ? '#mobile-sort' : '#desktop-sort')
+    const sort = page.locator(compact ? '#mobile-sort' : '#desktop-sort')
     await sort.selectOption('title')
     await expect(page.getByRole('article').first()).toContainText('Alpha reference')
     await page.reload()
-    if (testInfo.project.name === 'mobile')
-      await page.getByRole('button', { name: 'Filters' }).click()
+    if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
     await expect(sort).toHaveValue('title')
     await source.selectOption('YouTube')
     await expect(page.getByRole('article')).toHaveCount(1)
@@ -275,8 +279,7 @@ test('browser history, rapid filtering, shortcuts and account cache isolation', 
     await expect(page.getByRole('article')).toHaveCount(1)
     await page.reload()
     await expect(page.getByRole('article')).toHaveCount(1)
-    if (testInfo.project.name === 'mobile')
-      await page.getByRole('button', { name: 'Filters' }).click()
+    if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
     await page.getByRole('button', { name: 'Clear filters', exact: true }).first().click()
     await page.locator('body').click({ position: { x: 3, y: 500 } })
     await page.evaluate(() => {

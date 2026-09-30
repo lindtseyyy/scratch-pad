@@ -10,6 +10,7 @@ export function DeleteLinkDialog({ link, onClose }: { link: SavedLink; onClose: 
   const toast = useToast()
   return (
     <Modal
+      variant="sheet"
       title="Delete this link?"
       description={`“${link.title}” will be removed from your library. Its tags will be kept.`}
       onClose={() => {
@@ -17,7 +18,7 @@ export function DeleteLinkDialog({ link, onClose }: { link: SavedLink; onClose: 
       }}
     >
       {error && <InlineError>{error}</InlineError>}
-      <div className="mt-6 flex justify-end gap-2">
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
         <Button variant="secondary" data-autofocus onClick={onClose} disabled={mutation.isPending}>
           Keep link
         </Button>

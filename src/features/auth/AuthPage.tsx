@@ -48,8 +48,11 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
     }
   }
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <Link to="/" className="mb-10 flex items-center gap-2.5 text-lg font-semibold tracking-tight">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] py-12">
+      <Link
+        to="/"
+        className="mb-10 flex items-center gap-2.5 text-lg font-semibold tracking-tight touch:min-h-11"
+      >
         <Bookmark size={21} className="text-accent" aria-hidden="true" />
         Scratch-Pad
       </Link>

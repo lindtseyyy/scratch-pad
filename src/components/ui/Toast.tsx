@@ -14,16 +14,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <div
         role="status"
         aria-live="polite"
-        className="fixed bottom-5 right-5 z-50 max-w-[calc(100vw-40px)]"
+        className="fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 sm:left-auto sm:right-[max(1.25rem,env(safe-area-inset-right))] sm:max-w-[calc(100vw-40px)]"
       >
         {toast && (
           <div className="flex items-center gap-3 rounded-md border border-line bg-surface p-3 text-sm shadow-sm">
-            <Check size={16} className="text-accent" aria-hidden="true" />
-            {toast.message}
+            <Check size={16} className="shrink-0 text-accent" aria-hidden="true" />
+            <span className="min-w-0 flex-1 break-words">{toast.message}</span>
             <button
               onClick={() => setToast(null)}
               aria-label="Dismiss notification"
-              className="rounded p-1 text-muted"
+              className="tap rounded p-1 text-muted"
             >
               <X size={14} aria-hidden="true" />
             </button>

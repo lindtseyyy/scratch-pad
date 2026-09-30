@@ -74,7 +74,7 @@ export function SettingsPage() {
           {profile.isError && (
             <p role="alert" className="mt-2 text-xs text-danger">
               Your profile couldn’t load.{' '}
-              <button className="underline" onClick={() => void profile.refetch()}>
+              <button className="tap underline" onClick={() => void profile.refetch()}>
                 Retry
               </button>
             </p>
@@ -97,7 +97,7 @@ export function SettingsPage() {
               variant="secondary"
               aria-pressed={theme === option}
               onClick={() => setTheme(option)}
-              className={theme === option ? 'border-accent bg-accent-soft text-accent' : ''}
+              className={`flex-1 sm:flex-none ${theme === option ? 'border-accent bg-accent-soft text-accent' : ''}`}
             >
               {option[0].toUpperCase() + option.slice(1)}
             </Button>

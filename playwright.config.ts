@@ -27,6 +27,11 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'], defaultBrowserType: 'chromium' } },
+    {
+      name: 'small',
+      use: { viewport: { width: 320, height: 568 }, hasTouch: true, isMobile: true },
+    },
+    { name: 'tablet', use: { ...devices['iPad Mini'], defaultBrowserType: 'chromium' } },
   ],
   webServer: {
     command: 'npm run dev -- --port 5174 --strictPort',
