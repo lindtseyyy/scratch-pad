@@ -8,6 +8,7 @@ import { isStrongPassword } from '../../lib/password-rules'
 import { errorMessage } from '../../lib/errors'
 import { Button, Field, InlineError, Input, Spinner } from '../../components/ui/primitives'
 import { PasswordRules } from './PasswordRules'
+import { AppFooter } from '../../components/layout/AppFooter'
 
 export function AuthPage({ signup = false }: { signup?: boolean }) {
   const { session, loading, error: authError } = useAuth()
@@ -48,104 +49,103 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
     }
   }
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] py-12">
-      <Link
-        to="/"
-        className="mb-10 flex items-center gap-2.5 text-lg font-semibold tracking-tight touch:min-h-11"
-      >
-        <Bookmark size={21} className="text-accent" aria-hidden="true" />
-        Scratch-Pad
-      </Link>
-      <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-muted">
-        A place for your links
-      </p>
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {signup ? 'Make room for later.' : 'Welcome back.'}
-      </h1>
-      <p className="mb-8 mt-2 text-sm text-muted">
-        {signup
-          ? 'Save what catches your eye. Find it when you need it.'
-          : 'Your saved links, right where you left them.'}
-      </p>
-      <form onSubmit={submit} className="space-y-5">
-        {(error || authError) && <InlineError>{error || authError}</InlineError>}
-        <Field
-          id="username"
-          label="Username"
-          hint={signup ? '3–30 lowercase letters, numbers, or underscores.' : undefined}
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] py-8 sm:py-12">
+        <Link
+          to="/"
+          className="mb-6 flex items-center gap-2.5 text-lg font-semibold tracking-tight touch:min-h-11 sm:mb-10"
         >
-          <Input
-            id="username"
-            autoFocus
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            required
-            minLength={3}
-            maxLength={30}
-            pattern="[a-z0-9_]{3,30}"
-            autoCapitalize="none"
-            spellCheck={false}
-            aria-describedby={signup ? 'username-hint' : undefined}
-          />
-        </Field>
-        <Field id="password" label="Password">
-          <Input
-            id="password"
-            type="password"
-            autoComplete={signup ? 'new-password' : 'current-password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </Field>
-        {signup && (
-          <>
-            <PasswordRules password={password} />
-            <Field id="confirmation" label="Confirm password">
+          <Bookmark size={21} className="text-accent" aria-hidden="true" />
+          Scratch-Pad
+        </Link>
+        <div className="rounded-lg border border-line bg-surface p-5 sm:p-8">
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-muted">
+            A place for your links
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {signup ? 'Make room for later.' : 'Welcome back.'}
+          </h1>
+          <p className={`mb-8 mt-2 text-sm text-muted ${signup ? '' : 'italic'}`}>
+            {signup
+              ? 'Save what catches your eye. Find it when you need it.'
+              : 'Your saved links, right where you left them.'}
+          </p>
+          <form onSubmit={submit} className="space-y-5">
+            {(error || authError) && <InlineError>{error || authError}</InlineError>}
+            <Field
+              id="username"
+              label="Username"
+              hint={signup ? '3–30 lowercase letters, numbers, or underscores.' : undefined}
+            >
               <Input
-                id="confirmation"
-                type="password"
-                autoComplete="new-password"
-                value={confirmation}
-                onChange={(e) => setConfirmation(e.target.value)}
+                id="username"
+                autoFocus
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase())}
                 required
-                aria-invalid={!!confirmation && confirmation !== password}
+                minLength={3}
+                maxLength={30}
+                pattern="[a-z0-9_]{3,30}"
+                autoCapitalize="none"
+                spellCheck={false}
+                aria-describedby={signup ? 'username-hint' : undefined}
               />
             </Field>
-            {confirmation && confirmation !== password && (
-              <p className="text-xs text-danger">Passwords don’t match yet.</p>
+            <Field id="password" label="Password">
+              <Input
+                id="password"
+                type="password"
+                autoComplete={signup ? 'new-password' : 'current-password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Field>
+            {signup && (
+              <>
+                <PasswordRules password={password} />
+                <Field id="confirmation" label="Confirm password">
+                  <Input
+                    id="confirmation"
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirmation}
+                    onChange={(e) => setConfirmation(e.target.value)}
+                    required
+                    aria-invalid={!!confirmation && confirmation !== password}
+                  />
+                </Field>
+                {confirmation && confirmation !== password && (
+                  <p className="text-xs text-danger">Passwords don’t match yet.</p>
+                )}
+              </>
             )}
-          </>
-        )}
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={
-            busy ||
-            !isValidUsername(username) ||
-            !password ||
-            (signup && (!isStrongPassword(password) || password !== confirmation))
-          }
-        >
-          {busy ? 'Please wait…' : signup ? 'Create account' : 'Log in'}
-        </Button>
-      </form>
-      <p className="mt-6 text-center text-sm text-muted">
-        {signup ? 'Already have an account? ' : 'New here? '}
-        <Link
-          className="font-medium text-accent hover:underline"
-          to={signup ? '/login' : '/signup'}
-        >
-          {signup ? 'Log in' : 'Create an account'}
-        </Link>
-      </p>
-      {!signup && (
-        <p className="mt-8 text-xs leading-relaxed text-muted">
-          This app uses username accounts. If you forget your password, the project owner can reset
-          it through Supabase.
-        </p>
-      )}
-    </main>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                busy ||
+                !isValidUsername(username) ||
+                !password ||
+                (signup && (!isStrongPassword(password) || password !== confirmation))
+              }
+            >
+              {busy ? 'Please wait…' : signup ? 'Create account' : 'Log in'}
+            </Button>
+          </form>
+          <p className="mt-6 text-center text-sm text-muted">
+            {signup ? 'Already have an account? ' : 'New here? '}
+            <Link
+              className="font-medium text-accent hover:underline"
+              to={signup ? '/login' : '/signup'}
+            >
+              {signup ? 'Log in' : 'Create an account'}
+            </Link>
+          </p>
+        </div>
+      </main>
+      <AppFooter />
+    </div>
   )
 }

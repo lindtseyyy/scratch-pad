@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthProvider'
-import { useTheme, type Theme } from '../../hooks/useTheme'
 import { getSupabase } from '../../lib/supabase'
 import { isStrongPassword } from '../../lib/password-rules'
 import { errorMessage } from '../../lib/errors'
@@ -11,7 +10,6 @@ import { useToast } from '../../components/ui/Toast'
 
 export function SettingsPage() {
   const { session, signOut } = useAuth()
-  const { theme, setTheme } = useTheme()
   const [current, setCurrent] = useState('')
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
@@ -63,7 +61,6 @@ export function SettingsPage() {
   return (
     <main id="main" className="page">
       <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-      <p className="mt-1 text-sm text-muted">Make yourself at home.</p>
       <section className="mt-8 border-t border-line py-6">
         <h2 className="text-base font-medium">Account</h2>
         <div className="mt-4">
@@ -79,29 +76,6 @@ export function SettingsPage() {
               </button>
             </p>
           )}
-        </div>
-        <p className="mt-4 max-w-md text-xs leading-relaxed text-muted">
-          Username accounts don’t have email password recovery. The project owner can reset a
-          forgotten password through Supabase.
-        </p>
-      </section>
-      <section className="border-t border-line py-6">
-        <h2 className="text-base font-medium">Appearance</h2>
-        <p className="mt-1 text-sm text-muted">
-          System follows your device’s light or dark setting.
-        </p>
-        <div role="group" aria-label="Theme preference" className="mt-4 flex gap-2">
-          {(['system', 'light', 'dark'] as Theme[]).map((option) => (
-            <Button
-              key={option}
-              variant="secondary"
-              aria-pressed={theme === option}
-              onClick={() => setTheme(option)}
-              className={`flex-1 sm:flex-none ${theme === option ? 'border-accent bg-accent-soft text-accent' : ''}`}
-            >
-              {option[0].toUpperCase() + option.slice(1)}
-            </Button>
-          ))}
         </div>
       </section>
       <section className="border-t border-line py-6">

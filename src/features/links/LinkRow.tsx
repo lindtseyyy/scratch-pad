@@ -139,7 +139,7 @@ export function LinkRow({
           </MenuButton>
           <MenuItems
             anchor="bottom end"
-            className="z-20 min-w-36 rounded-md border border-line bg-surface p-1 [--anchor-gap:4px]"
+            className="dropdown-panel min-w-36 [--anchor-gap:4px] [--anchor-padding:8px]"
           >
             <MenuItem>
               <button className="menu-item" onClick={onEdit}>

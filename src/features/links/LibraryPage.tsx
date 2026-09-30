@@ -15,7 +15,9 @@ import type { SavedLink } from './api'
 function isTyping(target: EventTarget | null) {
   return (
     target instanceof HTMLElement &&
-    !!target.closest('input,textarea,select,[contenteditable="true"],[role="combobox"]')
+    !!target.closest(
+      'input,textarea,select,[contenteditable="true"],[role="combobox"],[role="listbox"],[role="option"],[aria-haspopup="listbox"]',
+    )
   )
 }
 export function LibraryPage() {
@@ -78,7 +80,7 @@ export function LibraryPage() {
       <div className="lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start lg:gap-8">
         <aside
           aria-label="Tag filters"
-          className="sticky top-8 hidden max-h-[calc(100dvh-4rem)] overflow-y-auto lg:block"
+          className="sticky top-8 hidden max-h-[calc(100dvh-4rem)] min-h-40 overflow-y-auto rounded-lg border border-line bg-surface p-3 lg:block"
         >
           <h2 className="mb-3 px-3 text-sm font-semibold">Tags</h2>
           {tags.data?.length ? (
@@ -113,7 +115,7 @@ export function LibraryPage() {
             </p>
           )}
         </aside>
-        <div className="min-w-0">
+        <div className="min-w-0 rounded-lg border border-line bg-surface p-3 sm:p-6">
           <div className="mb-3 flex items-start justify-between gap-3 sm:mb-6">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Library</h1>
@@ -148,8 +150,7 @@ export function LibraryPage() {
             </Button>
           </form>
           {quickError && <InlineError>{quickError}</InlineError>}
-          <div className="mb-1 flex items-center justify-end gap-2 text-xs text-muted sm:mb-6 sm:justify-between">
-            <span className="hidden sm:block">Keep something worth coming back to.</span>
+          <div className="mb-1 flex items-center justify-end gap-2 text-xs text-muted sm:mb-6">
             <button
               type="button"
               className="flex items-center gap-1.5 rounded py-1 text-secondary hover:text-accent touch:min-h-11 touch:min-w-11"

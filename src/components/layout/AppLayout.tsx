@@ -1,13 +1,15 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { Bookmark, ChevronDown, LogOut, Monitor, Moon, Sun, UserRound } from 'lucide-react'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useAuth } from '../../features/auth/AuthProvider'
 import { useTheme } from '../../hooks/useTheme'
 import { errorMessage } from '../../lib/errors'
-import { Button, InlineError } from '../ui/primitives'
+import { Button, InlineError, Spinner } from '../ui/primitives'
+import { AppFooter } from './AppFooter'
 
 export function AppLayout() {
+  const { pathname } = useLocation()
   const { session, signOut } = useAuth()
   const { theme, cycle } = useTheme()
   const [error, setError] = useState('')
@@ -18,7 +20,7 @@ export function AppLayout() {
       ? session.user.user_metadata.username
       : 'Account'
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <a
         href="#main"
         className="sr-only fixed left-4 top-4 z-50 rounded bg-surface px-4 py-2 focus:not-sr-only"
@@ -56,7 +58,7 @@ export function AppLayout() {
               </MenuButton>
               <MenuItems
                 anchor="bottom end"
-                className="z-30 min-w-40 rounded-md border border-line bg-surface p-1 [--anchor-gap:6px]"
+                className="dropdown-panel min-w-40 [--anchor-gap:4px] [--anchor-padding:8px]"
               >
                 <MenuItem>
                   <button
@@ -93,7 +95,7 @@ export function AppLayout() {
                 key={path}
                 to={path}
                 className={({ isActive }) =>
-                  `inline-flex items-center rounded py-1 font-medium touch:min-h-11 touch:min-w-11 ${isActive ? 'text-accent underline decoration-accent/40 underline-offset-8' : 'text-muted hover:text-ink'}`
+                  `nav-link inline-flex items-center rounded py-1 font-medium touch:min-h-11 touch:min-w-11 ${isActive ? 'text-accent' : 'text-muted hover:text-ink'}`
                 }
               >
                 {label}
@@ -107,10 +109,14 @@ export function AppLayout() {
           <InlineError>{error}</InlineError>
         </div>
       )}
-      <Outlet />
-      <footer className="mx-auto max-w-[908px] px-5 pb-6 text-xs text-muted sm:px-6">
-        Saved for a quieter moment.
-      </footer>
-    </>
+      <div className="flex-1">
+        <Suspense fallback={<Spinner label="Opening page…" />}>
+          <div key={pathname} className="route-enter">
+            <Outlet />
+          </div>
+        </Suspense>
+      </div>
+      <AppFooter />
+    </div>
   )
 }

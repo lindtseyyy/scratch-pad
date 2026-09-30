@@ -54,6 +54,24 @@ export function LinkToolbar({
     !!filters.query || !!filters.tags.length || !!filters.source || filters.sort !== 'newest'
   const filterCount =
     filters.tags.length + Number(!!filters.source) + Number(filters.sort !== 'newest')
+  const sourceOptions = [
+    { value: '', label: 'All sources' },
+    ...[...new Set([...sources, ...(filters.source ? [filters.source] : [])])].map((source) => ({
+      value: source,
+      label: source,
+    })),
+  ]
+  const sortOptions = [
+    { value: 'newest', label: 'Newest' },
+    { value: 'oldest', label: 'Oldest' },
+    { value: 'title', label: 'Title A–Z' },
+  ]
+  const changeFilters = (patch: Partial<LinkFilters>) => {
+    clearTimeout(timer.current)
+    // Commit the pending search together with the choice so neither URL update
+    // can overwrite the other when a dropdown is used before the debounce ends.
+    update({ query: draft.urlQuery === filters.query ? draft.query : filters.query, ...patch })
+  }
   const clearFilters = () => {
     clearTimeout(timer.current)
     setDraft({ query: '', urlQuery: '' })
@@ -63,7 +81,7 @@ export function LinkToolbar({
     <>
       <div
         data-search-row
-        className="sticky top-0 z-10 mb-3 flex gap-2 border-b border-line bg-canvas py-3 sm:static sm:flex-wrap sm:border-0 sm:py-0"
+        className="sticky top-0 z-10 mb-3 flex gap-2 border-b border-line bg-surface py-3 sm:static sm:flex-wrap sm:border-0 sm:py-0"
       >
         <div className="relative min-w-0 flex-1 sm:min-w-48">
           <Search
@@ -99,35 +117,26 @@ export function LinkToolbar({
           Filters{filterCount > 0 ? ` · ${filterCount}` : ''}
         </Button>
         <div className="hidden min-w-0 flex-wrap items-center gap-2 sm:flex">
-          <label htmlFor="desktop-source" className="sr-only">
+          <label id="desktop-source-label" htmlFor="desktop-source" className="sr-only">
             Source
           </label>
           <Select
             id="desktop-source"
             className="w-40 max-w-full"
             value={filters.source}
-            onChange={(e) => update({ source: e.target.value })}
-          >
-            <option value="">All sources</option>
-            {[...new Set([...sources, ...(filters.source ? [filters.source] : [])])].map(
-              (source) => (
-                <option key={source}>{source}</option>
-              ),
-            )}
-          </Select>
-          <label htmlFor="desktop-sort" className="sr-only">
+            onChange={(source) => changeFilters({ source })}
+            options={sourceOptions}
+          />
+          <label id="desktop-sort-label" htmlFor="desktop-sort" className="sr-only">
             Sort links
           </label>
           <Select
             id="desktop-sort"
             className="w-32 max-w-full"
             value={filters.sort}
-            onChange={(e) => update({ sort: e.target.value as Sort })}
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="title">Title A–Z</option>
-          </Select>
+            onChange={(sort) => changeFilters({ sort: sort as Sort })}
+            options={sortOptions}
+          />
         </div>
       </div>
       {!expanded && active && (
@@ -142,7 +151,7 @@ export function LinkToolbar({
               type="button"
               className="tag shrink-0 gap-2"
               aria-label={`Remove tag filter ${name}`}
-              onClick={() => update({ tags: filters.tags.filter((tag) => tag !== name) })}
+              onClick={() => changeFilters({ tags: filters.tags.filter((tag) => tag !== name) })}
             >
               <span className="max-w-40 truncate">{name}</span>
               <X size={14} aria-hidden="true" />
@@ -153,7 +162,7 @@ export function LinkToolbar({
               type="button"
               className="tag shrink-0 gap-2"
               aria-label={`Remove source filter ${filters.source}`}
-              onClick={() => update({ source: '' })}
+              onClick={() => changeFilters({ source: '' })}
             >
               <span className="max-w-40 truncate">{filters.source}</span>
               <X size={14} aria-hidden="true" />
@@ -164,7 +173,7 @@ export function LinkToolbar({
               type="button"
               className="tag shrink-0 gap-2"
               aria-label="Reset sort to newest"
-              onClick={() => update({ sort: 'newest' })}
+              onClick={() => changeFilters({ sort: 'newest' })}
             >
               {filters.sort === 'oldest' ? 'Oldest' : 'Title A–Z'}
               <X size={14} aria-hidden="true" />
@@ -186,38 +195,37 @@ export function LinkToolbar({
       >
         <div className="flex gap-2 sm:hidden">
           <div className="min-w-0 flex-1">
-            <label htmlFor="mobile-source" className="mb-1 block text-xs text-muted">
+            <label
+              id="mobile-source-label"
+              htmlFor="mobile-source"
+              className="mb-1 block text-xs text-muted"
+            >
               Source
             </label>
             <Select
               id="mobile-source"
               value={filters.source}
-              onChange={(e) => update({ source: e.target.value })}
-            >
-              <option value="">All sources</option>
-              {[...new Set([...sources, ...(filters.source ? [filters.source] : [])])].map(
-                (source) => (
-                  <option key={source}>{source}</option>
-                ),
-              )}
-            </Select>
+              onChange={(source) => changeFilters({ source })}
+              options={sourceOptions}
+            />
           </div>
           <div className="min-w-0 flex-1">
-            <label htmlFor="mobile-sort" className="mb-1 block text-xs text-muted">
+            <label
+              id="mobile-sort-label"
+              htmlFor="mobile-sort"
+              className="mb-1 block text-xs text-muted"
+            >
               Sort links
             </label>
             <Select
               id="mobile-sort"
               value={filters.sort}
-              onChange={(e) => update({ sort: e.target.value as Sort })}
-            >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="title">Title A–Z</option>
-            </Select>
+              onChange={(sort) => changeFilters({ sort: sort as Sort })}
+              options={sortOptions}
+            />
           </div>
         </div>
-        <div className="flex items-start gap-3">
+        <div className="flex items-end gap-3">
           <div className="min-w-0 flex-1">
             <label htmlFor="filter-tags" className="sr-only">
               Filter by tags
@@ -225,7 +233,7 @@ export function LinkToolbar({
             <TagInput
               id="filter-tags"
               value={filters.tags}
-              onChange={(tags) => update({ tags })}
+              onChange={(tags) => changeFilters({ tags })}
               suggestions={tags.map((tag) => tag.name)}
               allowCreate={false}
             />
@@ -234,7 +242,7 @@ export function LinkToolbar({
             <Button
               variant="ghost"
               onClick={clearFilters}
-              className="mt-2 whitespace-nowrap px-1 text-xs"
+              className="shrink-0 whitespace-nowrap px-1 text-xs"
             >
               Clear filters
             </Button>

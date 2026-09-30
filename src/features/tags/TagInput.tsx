@@ -68,22 +68,24 @@ export function TagInput({
         if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)
       }}
     >
-      <div className="mb-2 flex flex-wrap gap-1.5 touch:gap-2">
-        {value.map((name) => (
-          <span key={name} className="tag">
-            <span className="min-w-0 [overflow-wrap:anywhere]">{name}</span>
-            <button
-              type="button"
-              className="tap ml-0.5 rounded p-0.5 hover:text-ink"
-              disabled={disabled}
-              aria-label={`Remove tag ${name}`}
-              onClick={() => onChange(value.filter((tag) => tag !== name))}
-            >
-              <X size={12} className="touch:size-4" aria-hidden="true" />
-            </button>
-          </span>
-        ))}
-      </div>
+      {value.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5 touch:gap-2">
+          {value.map((name) => (
+            <span key={name} className="tag">
+              <span className="min-w-0 [overflow-wrap:anywhere]">{name}</span>
+              <button
+                type="button"
+                className="tap ml-0.5 rounded p-0.5 hover:text-ink"
+                disabled={disabled}
+                aria-label={`Remove tag ${name}`}
+                onClick={() => onChange(value.filter((tag) => tag !== name))}
+              >
+                <X size={12} className="touch:size-4" aria-hidden="true" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
       <Combobox value={null} onChange={add} disabled={disabled} onClose={() => setQuery('')}>
         {({ open }) => (
           <>
@@ -104,7 +106,7 @@ export function TagInput({
                   setQuery(e.target.value)
                   setError('')
                 }}
-                aria-describedby={`${id}-hint`}
+                aria-describedby={error || allowCreate ? `${id}-hint` : undefined}
                 onKeyDown={(event) => {
                   if (
                     event.key === ',' &&
@@ -121,28 +123,25 @@ export function TagInput({
               />
               <ComboboxButton
                 ref={toggleRef}
-                className="tap absolute right-0 top-0 rounded p-2 text-muted hover:text-ink"
+                className="tap absolute inset-y-0 right-0 w-11 rounded-r-md text-muted hover:text-ink"
                 aria-label={allowCreate ? 'Show tag suggestions' : 'Show tag filters'}
               >
-                <ChevronDown size={15} aria-hidden="true" />
+                <ChevronDown size={16} aria-hidden="true" />
               </ComboboxButton>
               <ComboboxOptions
+                anchor={{ to: 'bottom start', gap: 4, padding: 8 }}
                 modal={false}
-                className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-line bg-surface p-1 empty:invisible"
+                className="dropdown-panel w-[var(--input-width)] empty:invisible"
               >
                 {matches.map((name) => (
-                  <ComboboxOption
-                    value={name}
-                    key={name}
-                    className="menu-item cursor-pointer break-all"
-                  >
+                  <ComboboxOption value={name} key={name} className="dropdown-option break-all">
                     {name}
                   </ComboboxOption>
                 ))}
                 {canCreate && (
                   <ComboboxOption
                     value={normalized}
-                    className="menu-item cursor-pointer break-all text-accent"
+                    className="dropdown-option break-all text-accent"
                   >
                     Create “{normalized}”
                   </ComboboxOption>
@@ -182,16 +181,15 @@ export function TagInput({
             ))}
         </div>
       )}
-      <p
-        id={`${id}-hint`}
-        className={`mt-1.5 text-xs ${error ? 'text-danger' : 'text-muted'}`}
-        role={error ? 'alert' : undefined}
-      >
-        {error ||
-          (allowCreate
-            ? 'Press Enter or comma to add a tag.'
-            : 'Links must match every selected tag.')}
-      </p>
+      {(error || allowCreate) && (
+        <p
+          id={`${id}-hint`}
+          className={`mt-1.5 text-xs ${error ? 'text-danger' : 'text-muted'}`}
+          role={error ? 'alert' : undefined}
+        >
+          {error || 'Press Enter or comma to add a tag.'}
+        </p>
+      )}
     </div>
   )
 }

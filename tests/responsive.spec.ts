@@ -11,6 +11,13 @@ const local = JSON.parse(
 )
 
 async function checkScreen(page: Page, info: TestInfo, screen: string, theme: string) {
+  await page.locator('.route-enter').evaluateAll(async (elements) => {
+    await Promise.all(
+      elements.flatMap((element) =>
+        element.getAnimations().map((animation) => animation.finished.catch(() => {})),
+      ),
+    )
+  })
   await expect
     .poll(() =>
       page.evaluate(
@@ -18,6 +25,20 @@ async function checkScreen(page: Page, info: TestInfo, screen: string, theme: st
       ),
     )
     .toBe(true)
+  const misalignedDropdowns = await page
+    .locator('button[aria-haspopup="listbox"]:visible, input[role="combobox"]:visible')
+    .evaluateAll((elements) =>
+      elements.flatMap((element) => {
+        const field = element.getBoundingClientRect()
+        const arrow = (element.matches('button') ? element : element.parentElement)
+          ?.querySelector('svg')
+          ?.getBoundingClientRect()
+        return arrow && Math.abs(field.y + field.height / 2 - arrow.y - arrow.height / 2) <= 1
+          ? []
+          : [element.id]
+      }),
+    )
+  expect(misalignedDropdowns).toEqual([])
   if (info.project.use.hasTouch) {
     expect(await page.evaluate(() => matchMedia('(pointer: coarse)').matches)).toBe(true)
     const undersized = await page.evaluate(() =>
@@ -50,7 +71,7 @@ async function checkScreen(page: Page, info: TestInfo, screen: string, theme: st
     await expect(page.locator('kbd:visible')).toHaveCount(0)
     await expect(page.getByText('Ctrl / ⌘ + Enter to save')).not.toBeVisible()
     const smallInputs = await page
-      .locator('input:visible, textarea:visible, select:visible')
+      .locator('input:visible, textarea:visible, button.input[aria-haspopup="listbox"]:visible')
       .evaluateAll((elements) =>
         elements
           .filter((element) => parseFloat(getComputedStyle(element).fontSize) < 16)
@@ -64,6 +85,82 @@ async function checkScreen(page: Page, info: TestInfo, screen: string, theme: st
     // Preserve the device viewport: full-page capture resets Chromium's touch emulation.
     fullPage: false,
   })
+}
+
+async function checkSelectDropdown(
+  page: Page,
+  info: TestInfo,
+  theme: string,
+  id: string,
+  screen: string,
+) {
+  const trigger = page.locator(`#${id}`)
+  await trigger.click()
+  const menu = page.getByRole('listbox')
+  await expect(menu).toBeVisible()
+  await expect(menu.getByRole('option', { selected: true })).toHaveCount(1)
+  await expect(menu).toHaveCSS(
+    'background-color',
+    theme === 'dark' ? 'rgb(31, 35, 31)' : 'rgb(255, 255, 255)',
+  )
+  await expect(menu).toHaveCSS('outline-style', 'none')
+  await expect
+    .poll(async () => {
+      const field = await trigger.boundingBox()
+      const panel = await menu.boundingBox()
+      const viewport = page.viewportSize()!
+      return (
+        !!field &&
+        !!panel &&
+        Math.abs(field.x - panel.x) <= 1 &&
+        Math.abs(field.width - panel.width) <= 1 &&
+        panel.y >= 0 &&
+        panel.y + panel.height <= viewport.height
+      )
+    })
+    .toBe(true)
+  await checkScreen(page, info, screen, theme)
+  await menu.press('ArrowDown')
+  await menu.press('n')
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  await menu.press('Escape')
+  await expect(menu).not.toBeVisible()
+  await expect(trigger).toBeFocused()
+}
+
+async function checkTagDropdown(
+  page: Page,
+  info: TestInfo,
+  theme: string,
+  context: 'library' | 'dialog',
+) {
+  const input = page.getByLabel(context === 'library' ? 'Filter by tags' : 'Tags', { exact: true })
+  await page
+    .getByRole('button', {
+      name: context === 'library' ? 'Show tag filters' : 'Show tag suggestions',
+      exact: true,
+    })
+    .click()
+  const menu = page.getByRole('listbox')
+  await expect(menu).toBeVisible()
+  await expect
+    .poll(async () => {
+      const field = await input.boundingBox()
+      const panel = await menu.boundingBox()
+      const viewport = page.viewportSize()!
+      return (
+        !!field &&
+        !!panel &&
+        Math.abs(field.x - panel.x) <= 1 &&
+        Math.abs(field.width - panel.width) <= 1 &&
+        panel.y >= 0 &&
+        panel.y + panel.height <= viewport.height
+      )
+    })
+    .toBe(true)
+  await checkScreen(page, info, `${context}-tag-dropdown`, theme)
+  await page.keyboard.press('Escape')
+  await expect(menu).not.toBeVisible()
 }
 
 test('responsive screens, touch controls, filters and dialog actions', async ({ page }, info) => {
@@ -137,6 +234,23 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
       await page.getByRole('button', { name: 'Log in', exact: true }).click()
       await expect(page.getByRole('article')).toHaveCount(37)
       await checkScreen(page, info, 'library', theme)
+      if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
+      await checkSelectDropdown(
+        page,
+        info,
+        theme,
+        compact ? 'mobile-source' : 'desktop-source',
+        'source-dropdown',
+      )
+      await checkSelectDropdown(
+        page,
+        info,
+        theme,
+        compact ? 'mobile-sort' : 'desktop-sort',
+        'sort-dropdown',
+      )
+      await checkTagDropdown(page, info, theme, 'library')
+      if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
       const reference = page.getByRole('article').filter({ hasText: 'Responsive reference' })
       if (compact) {
         const moreTags = reference.getByRole('button', { name: /Show \d+ more tags/ })
@@ -155,8 +269,10 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
         ).toBeVisible()
         await expect(page.getByRole('button', { name: 'Filters · 1' })).toBeVisible()
         await page.getByRole('button', { name: /^Filters/ }).click()
-        await page.locator('#mobile-source').selectOption('GitHub')
-        await page.locator('#mobile-sort').selectOption('title')
+        await page.locator('#mobile-source').click()
+        await page.getByRole('option', { name: 'GitHub', exact: true }).click()
+        await page.locator('#mobile-sort').click()
+        await page.getByRole('option', { name: 'Title A–Z', exact: true }).click()
         await page.getByRole('button', { name: /^Filters/ }).click()
         await expect(page.getByRole('button', { name: 'Filters · 3' })).toBeVisible()
         await expect(
@@ -220,6 +336,7 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
         await expect(dialog.getByRole('button', { name: 'Remove tag backend' })).toBeVisible()
         await checkScreen(page, info, 'tag-suggestions', theme)
       }
+      await checkTagDropdown(page, info, theme, 'dialog')
       await dialog.getByLabel('Source', { exact: true }).focus()
       if (compact) await expect(save).toBeInViewport()
       if (compact && theme === 'light') {
@@ -249,16 +366,17 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
       await page.getByRole('link', { name: 'Tags', exact: true }).click()
       await expect(page.getByRole('link', { name: 'backend', exact: true })).toBeVisible()
       await checkScreen(page, info, 'tags', theme)
+      await checkSelectDropdown(page, info, theme, 'tag-sort', 'tag-sort-dropdown')
       await page.getByRole('button', { name: 'Delete backend', exact: true }).click()
       await expect(dialog.getByRole('button', { name: 'Keep tag' })).toBeFocused()
       await checkScreen(page, info, 'delete-tag-sheet', theme)
       await dialog.getByRole('button', { name: 'Keep tag' }).click()
       await page.getByRole('link', { name: 'Settings', exact: true }).click()
-      await expect(page.getByRole('group', { name: 'Theme preference' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible()
       await checkScreen(page, info, 'settings', theme)
-      await page
-        .getByRole('button', { name: theme === 'light' ? 'Dark' : 'Light', exact: true })
-        .click()
+      await page.getByRole('button', { name: `Theme: ${theme}. Cycle theme.`, exact: true }).click()
+      if (theme === 'dark')
+        await page.getByRole('button', { name: 'Theme: system. Cycle theme.', exact: true }).click()
       await expect(page.locator('meta[name="theme-color"]')).toHaveCount(2)
       expect(
         await page

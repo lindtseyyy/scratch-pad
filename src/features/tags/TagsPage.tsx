@@ -163,13 +163,18 @@ export function TagsPage() {
           </Button>
         </form>
         <div>
-          <label htmlFor="tag-sort" className="sr-only">
+          <label id="tag-sort-label" htmlFor="tag-sort" className="sr-only">
             Sort tags
           </label>
-          <Select id="tag-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="name">Name A–Z</option>
-            <option value="usage">Most used</option>
-          </Select>
+          <Select
+            id="tag-sort"
+            value={sort}
+            onChange={setSort}
+            options={[
+              { value: 'name', label: 'Name A–Z' },
+              { value: 'usage', label: 'Most used' },
+            ]}
+          />
         </div>
       </div>
       {error && (

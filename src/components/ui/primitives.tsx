@@ -1,12 +1,20 @@
-import { Dialog, DialogPanel, DialogTitle, Description } from '@headlessui/react'
-import { X, LoaderCircle } from 'lucide-react'
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Description,
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from '@headlessui/react'
+import { Check, ChevronDown, X, LoaderCircle } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
   Ref,
   ReactNode,
-  SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react'
 
@@ -31,8 +39,69 @@ export function Textarea({
 }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea className={`input resize-y ${className}`} {...props} />
 }
-export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={`input ${className}`} {...props} />
+export function Select({
+  id,
+  value,
+  onChange,
+  options,
+  disabled = false,
+  className = '',
+}: {
+  id: string
+  value: string
+  onChange: (value: string) => void
+  options: { value: string; label: string; disabled?: boolean }[]
+  disabled?: boolean
+  className?: string
+}) {
+  const selected = options.find((option) => option.value === value)
+  return (
+    <Listbox value={value} onChange={onChange} disabled={disabled}>
+      <ListboxButton
+        id={id}
+        aria-labelledby={`${id}-label ${id}-value`}
+        className={`input relative min-w-0 pr-11 text-left ${className}`}
+        title={selected?.label}
+      >
+        <span id={`${id}-value`} className="block truncate">
+          {selected?.label || value}
+        </span>
+        <span className="pointer-events-none absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted">
+          <ChevronDown size={16} aria-hidden="true" />
+        </span>
+      </ListboxButton>
+      <ListboxOptions
+        anchor={{ to: 'bottom start', gap: 4, padding: 8 }}
+        modal={false}
+        className="dropdown-panel w-[var(--button-width)]"
+      >
+        {options.map((option) => (
+          <ListboxOption
+            key={option.value}
+            value={option.value}
+            disabled={option.disabled}
+            className="dropdown-option"
+          >
+            {({ selected }) => (
+              <>
+                <span
+                  className="min-w-0 flex-1 line-clamp-2 [overflow-wrap:anywhere]"
+                  title={option.label}
+                >
+                  {option.label}
+                </span>
+                <Check
+                  size={16}
+                  className={`shrink-0 text-accent ${selected ? '' : 'invisible'}`}
+                  aria-hidden="true"
+                />
+              </>
+            )}
+          </ListboxOption>
+        ))}
+      </ListboxOptions>
+    </Listbox>
+  )
 }
 export function Field({
   id,
