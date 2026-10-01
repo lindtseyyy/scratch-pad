@@ -282,7 +282,8 @@ test('browser history, rapid filtering, shortcuts and account cache isolation', 
     await login(0)
     await expect(page.getByRole('article')).toHaveCount(2)
     await expect(page.getByRole('article').first()).toContainText('Beta video')
-    await page.getByRole('button', { name: /Add details/ }).click()
+    await page.getByLabel('URL to save').fill('https://example.com')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
     await page.getByRole('dialog').getByLabel('URL', { exact: true }).fill('javascript:alert(1)')
     await page.getByRole('button', { name: 'Save link', exact: true }).click()
     await expect(page.getByRole('alert')).toHaveText(

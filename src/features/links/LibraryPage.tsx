@@ -170,7 +170,7 @@ export function LibraryPage() {
                 `${total.data} saved ${total.data === 1 ? 'link' : 'links'}`}
             </div>
           </div>
-          <form className="mb-2 flex gap-2" onSubmit={add}>
+          <form className="mb-2 flex gap-2 sm:mb-6" onSubmit={add}>
             <label htmlFor="quick-url" className="sr-only">
               URL to save
             </label>
@@ -192,16 +192,6 @@ export function LibraryPage() {
             </Button>
           </form>
           {quickError && <InlineError>{quickError}</InlineError>}
-          <div className="mb-1 flex items-center justify-end gap-2 text-xs text-muted sm:mb-6">
-            <button
-              type="button"
-              className="flex items-center gap-1.5 rounded py-1 text-secondary hover:text-accent touch:min-h-11 touch:min-w-11"
-              onClick={() => setForm({})}
-            >
-              Add details{' '}
-              <kbd className="hidden rounded border border-line px-1.5 fine:inline">N</kbd>
-            </button>
-          </div>
           <LinkToolbar
             filters={filters}
             update={update}
