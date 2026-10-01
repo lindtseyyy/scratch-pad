@@ -47,7 +47,7 @@ export function LinkRow({
     return () => observer.disconnect()
   }, [link.tags])
   return (
-    <article className="group relative border-b border-line py-3">
+    <article className="group relative rounded-lg border border-line border-l-4 border-l-accent/60 bg-canvas/40 p-3 transition-colors hover:border-accent/50 hover:bg-accent-soft/40 focus-within:border-accent/60 sm:p-4">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <a

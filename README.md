@@ -58,7 +58,7 @@ The local API is on port 54321 and Postgres on 54322. Local Supabase uses the sa
 
 - Username signup/login, persistent sessions, protected routes, logout, and verified password changes.
 - Quick add, URL normalization, editable source detection, readable fallback titles, optional notes, and duplicate notices.
-- Transactional link/tag saves, edit and confirmed delete, exact local timestamps, and 50-row pagination.
+- Transactional link/tag saves, edit and confirmed delete, exact local timestamps, and bordered entries with 20-link pages. Previous/Next navigation survives reloads and browser history; changing a filter returns to page 1.
 - Inline tag creation/autocomplete and a tag management page with usage counts, rename, and delete without removing links.
 - Literal text search across title, URL, source, and note; match-all tag filters; source filters; newest/oldest/title sorting. Filter state survives reloads and browser navigation through URL parameters.
 - System/light/dark themes persisted locally with theme applied before React loads.

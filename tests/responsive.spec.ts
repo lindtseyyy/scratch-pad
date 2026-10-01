@@ -214,7 +214,7 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
     expect(
       (
         await api.from('links').insert(
-          Array.from({ length: 35 }, (_, index) => ({
+          Array.from({ length: 15 }, (_, index) => ({
             url: `https://example.com/responsive/${index}`,
             title: `Saved reference ${index}`,
           })),
@@ -234,7 +234,7 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
       await page.getByRole('button', { name: 'Log in', exact: true }).click()
       // A previous sign-out remembers Settings; choose the screen under test explicitly.
       await page.getByRole('link', { name: 'Library', exact: true }).click()
-      await expect(page.getByRole('article')).toHaveCount(37)
+      await expect(page.getByRole('article')).toHaveCount(17)
       await checkScreen(page, info, 'library', theme)
       if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
       await checkSelectDropdown(
@@ -288,7 +288,7 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
         await expect(page.getByRole('article')).toHaveCount(2)
       }
       await page.getByRole('button', { name: 'Clear filters', exact: true }).first().click()
-      await expect(page.getByRole('article')).toHaveCount(37)
+      await expect(page.getByRole('article')).toHaveCount(17)
       if (compact) {
         await page.evaluate(() => window.scrollTo(0, 2000))
         await expect
@@ -310,7 +310,7 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
           sidebar.getByRole('button', { name: 'backend, 2 links', exact: true }),
         ).toHaveAttribute('aria-pressed', 'true')
         await sidebar.getByRole('button', { name: 'backend, 2 links', exact: true }).click()
-        await expect(page.getByRole('article')).toHaveCount(37)
+        await expect(page.getByRole('article')).toHaveCount(17)
       }
 
       if (info.project.name === 'desktop' && theme === 'light') {

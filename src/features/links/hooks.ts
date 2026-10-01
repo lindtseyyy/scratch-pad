@@ -1,8 +1,8 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '../../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
 import { useTags } from '../tags/hooks'
-import { deleteLink, listLinks, saveLink, type SavedLink } from './api'
+import { deleteLink, LINKS_PER_PAGE, listLinks, saveLink, type SavedLink } from './api'
 import type { LinkFilters } from '../../hooks/useUrlFilters'
 
 export function useRefreshLibrary() {
@@ -14,21 +14,19 @@ export function useRefreshLibrary() {
       ),
     )
 }
-export function useLinks(filters: LinkFilters) {
+export function useLinks(filters: LinkFilters, page: number) {
   const { session } = useAuth()
   const tags = useTags()
   const selectedTags = (tags.data || [])
     .filter((tag) => filters.tags.includes(tag.name))
     .map((tag) => tag.id)
-  return useInfiniteQuery({
-    queryKey: ['links', session?.user.id, filters, selectedTags],
+  return useQuery({
+    queryKey: ['links', session?.user.id, filters, selectedTags, page],
     enabled: !!session && tags.isSuccess,
-    initialPageParam: 0,
-    queryFn: ({ pageParam, signal }) =>
+    queryFn: ({ signal }) =>
       selectedTags.length !== filters.tags.length
-        ? Promise.resolve([] as SavedLink[])
-        : listLinks(filters, selectedTags, pageParam, signal),
-    getNextPageParam: (lastPage, pages) => (lastPage.length === 50 ? pages.length * 50 : undefined),
+        ? Promise.resolve({ rows: [], hasNextPage: false })
+        : listLinks(filters, selectedTags, (page - 1) * LINKS_PER_PAGE, signal),
   })
 }
 export function useSaveLink() {

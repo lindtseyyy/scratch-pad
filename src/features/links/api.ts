@@ -14,6 +14,7 @@ export type LinkDraft = {
   description: string
   tags: string[]
 }
+export const LINKS_PER_PAGE = 20
 export async function listLinks(
   filters: LinkFilters,
   tagIds: string[],
@@ -26,14 +27,14 @@ export async function listLinks(
       p_tag_ids: tagIds,
       p_source: filters.source || undefined,
       p_sort: filters.sort,
-      p_limit: 50,
+      p_limit: LINKS_PER_PAGE + 1,
       p_offset: offset,
     })
     .select('*, tags(id, name)')
     .abortSignal(signal)
     .returns<SavedLink[]>()
   if (error) throw error
-  return data
+  return { rows: data.slice(0, LINKS_PER_PAGE), hasNextPage: data.length > LINKS_PER_PAGE }
 }
 export async function saveLink(draft: LinkDraft) {
   const { data, error } = await getSupabase().rpc('save_link', {

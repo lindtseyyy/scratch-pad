@@ -11,6 +11,7 @@ import { useTags } from '../tags/hooks'
 import { useLinkCount, useLinks, useSources } from './hooks'
 import { LinkToolbar } from './LinkToolbar'
 import { LinkRow } from './LinkRow'
+import { LinkPagination } from './LinkPagination'
 import { LinkFormDialog } from './LinkFormDialog'
 import { DeleteLinkDialog } from './DeleteLinkDialog'
 import type { SavedLink } from './api'
@@ -28,8 +29,8 @@ export function LibraryPage() {
   const navigate = useNavigate()
   const toast = useToast()
   const handledEntry = useRef<string | null>(null)
-  const { filters, update, clear } = useUrlFilters()
-  const links = useLinks(filters)
+  const { filters, page, setPage, update, clear } = useUrlFilters()
+  const links = useLinks(filters, page)
   const tags = useTags()
   const sources = useSources()
   const total = useLinkCount()
@@ -48,6 +49,17 @@ export function LibraryPage() {
   const [deleting, setDeleting] = useState<SavedLink | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const quickRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  const focusPage = useRef(false)
+  useEffect(() => {
+    if (links.data?.rows.length === 0 && page > 1) {
+      setPage(1, true)
+    } else if (links.data && focusPage.current) {
+      focusPage.current = false
+      listRef.current?.scrollIntoView({ block: 'start' })
+      listRef.current?.focus({ preventScroll: true })
+    }
+  }, [links.data, page, setPage])
   useEffect(() => {
     const share = (location.state as { share?: SharedLink } | null)?.share
     const params = new URLSearchParams(location.search)
@@ -102,7 +114,7 @@ export function LibraryPage() {
       setQuickError(errorMessage(error))
     }
   }
-  const rows = links.data?.pages.flat() || []
+  const rows = links.data?.rows || []
   const active = !!filters.query || !!filters.tags.length || !!filters.source
   const error = tags.error || links.error
   return (
@@ -220,7 +232,7 @@ export function LibraryPage() {
                 Try again
               </Button>
             </div>
-          ) : links.isPending ? (
+          ) : links.isPending || (page > 1 && rows.length === 0) ? (
             <Spinner label="Loading your links…" />
           ) : rows.length === 0 ? (
             <EmptyState
@@ -240,7 +252,14 @@ export function LibraryPage() {
             </EmptyState>
           ) : (
             <>
-              <div aria-label="Saved links" aria-busy={links.isFetching}>
+              <div
+                ref={listRef}
+                role="region"
+                aria-label={`Saved links, page ${page}`}
+                aria-busy={links.isFetching}
+                tabIndex={-1}
+                className="scroll-mt-20 space-y-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:scroll-mt-4"
+              >
                 {rows.map((link) => (
                   <LinkRow
                     key={link.id}
@@ -251,22 +270,17 @@ export function LibraryPage() {
                   />
                 ))}
               </div>
-              <div className="flex items-center justify-between gap-3 py-5">
-                <p className="text-xs text-muted" role="status">
-                  {rows.length} {active ? 'matching' : 'saved'}{' '}
-                  {rows.length === 1 ? 'link' : 'links'}
-                  {links.isFetching && !links.isFetchingNextPage ? ' · Updating…' : ''}
-                </p>
-                {links.hasNextPage && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => void links.fetchNextPage()}
-                    disabled={links.isFetchingNextPage}
-                  >
-                    {links.isFetchingNextPage ? 'Loading…' : 'Load more'}
-                  </Button>
-                )}
-              </div>
+              <LinkPagination
+                page={page}
+                count={rows.length}
+                matching={active}
+                hasNextPage={links.data?.hasNextPage || false}
+                busy={links.isFetching}
+                onPage={(next) => {
+                  focusPage.current = true
+                  setPage(next)
+                }}
+              />
             </>
           )}
           {form && (
