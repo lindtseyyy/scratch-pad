@@ -1,0 +1,12 @@
+.env*
+.local/
+node_modules/
+dist/
+test-results/
+playwright-report/
+coverage/
+supabase/.temp/
+supabase/.branches/
+supabase/signing_keys.json
+*.log
+*.tsbuildinfo

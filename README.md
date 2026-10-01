@@ -106,6 +106,8 @@ Column grants protect `user_id`, IDs, `created_at`, and `updated_at` from client
 
 Build with `npm run build` and publish `dist/` to your preferred static host. Set the three `VITE_*` values in the host's build environment before building, then set the Supabase Auth Site URL to the final HTTPS address. The public key is expected to be visible in the built JavaScript; data isolation is enforced by RLS.
 
-Vercel can use `vercel.json`; Netlify and Cloudflare Pages can use the included `public/_redirects`. Use the build command `npm run build` and output directory `dist`. The fallback serves `index.html` for routes such as `/tags` and `/settings`. No hosting account or target was provided, so this workspace does not create a public deployment.
+The production app is hosted at [scratch-pad-omega.vercel.app](https://scratch-pad-omega.vercel.app) in the `prof-pixs-projects/scratch-pad` Vercel project. The project is connected to the GitHub repository, and the three public `VITE_*` values are configured for production and preview builds. The Supabase Auth Site URL is set to the production address.
+
+`vercel.json` sets the Vite framework, build command `npm run build`, output directory `dist`, and the fallback for routes such as `/tags` and `/settings`. `.vercelignore` excludes local environment files, signing keys, and test output from uploads. This checkout is linked through the gitignored `.vercel/` directory; redeploy it with `vercel deploy --prod --yes`. A fresh checkout can use `vercel link --project scratch-pad --scope prof-pixs-projects --yes` first. Netlify and Cloudflare Pages can use the included `public/_redirects` if you move hosts.
 
 # scratch-pad
