@@ -4,11 +4,13 @@ import { Bookmark, ChevronDown, LogOut, Monitor, Moon, Sun, UserRound } from 'lu
 import { Suspense, useState } from 'react'
 import { useAuth } from '../../features/auth/AuthProvider'
 import { useTheme } from '../../hooks/useTheme'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { errorMessage } from '../../lib/errors'
 import { Button, InlineError, Spinner } from '../ui/primitives'
 import { AppFooter } from './AppFooter'
 
 export function AppLayout() {
+  const online = useOnlineStatus()
   const { pathname } = useLocation()
   const { session, signOut } = useAuth()
   const { theme, cycle } = useTheme()
@@ -27,7 +29,7 @@ export function AppLayout() {
       >
         Skip to content
       </a>
-      <header className="border-b border-line bg-surface">
+      <header className="border-b border-line bg-surface pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-[908px] flex-wrap items-center justify-between gap-x-4 gap-y-1 pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] py-3 sm:gap-y-3 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:py-4 lg:max-w-[1168px]">
           <NavLink
             to="/"
@@ -104,6 +106,14 @@ export function AppLayout() {
           </nav>
         </div>
       </header>
+      {!online && (
+        <p
+          role="status"
+          className="border-b border-line bg-soft px-[max(1.25rem,env(safe-area-inset-left))] py-2 text-center text-sm text-secondary"
+        >
+          You're offline. Saved links will load when you reconnect.
+        </p>
+      )}
       {error && (
         <div className="mx-auto mt-3 max-w-[860px] px-5">
           <InlineError>{error}</InlineError>

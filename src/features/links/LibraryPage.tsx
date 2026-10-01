@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Plus } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useUrlFilters } from '../../hooks/useUrlFilters'
 import { normalizeUrl } from '../../lib/url'
 import { errorMessage } from '../../lib/errors'
+import type { SharedLink } from '../../lib/share'
+import { useToast } from '../../components/ui/Toast'
 import { Button, EmptyState, InlineError, Input, Spinner } from '../../components/ui/primitives'
 import { useTags } from '../tags/hooks'
 import { useLinkCount, useLinks, useSources } from './hooks'
@@ -21,6 +24,10 @@ function isTyping(target: EventTarget | null) {
   )
 }
 export function LibraryPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const toast = useToast()
+  const handledEntry = useRef<string | null>(null)
   const { filters, update, clear } = useUrlFilters()
   const links = useLinks(filters)
   const tags = useTags()
@@ -28,10 +35,33 @@ export function LibraryPage() {
   const total = useLinkCount()
   const [quickUrl, setQuickUrl] = useState('')
   const [quickError, setQuickError] = useState('')
-  const [form, setForm] = useState<{ url?: string; link?: SavedLink } | null>(null)
+  const [form, setForm] = useState<{
+    url?: string
+    title?: string
+    link?: SavedLink
+    entry?: string
+  } | null>(() => {
+    const share = (location.state as { share?: SharedLink } | null)?.share
+    if (share && 'url' in share) return { url: share.url, title: share.title, entry: location.key }
+    return new URLSearchParams(location.search).get('add') === '1' ? {} : null
+  })
   const [deleting, setDeleting] = useState<SavedLink | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const quickRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    const share = (location.state as { share?: SharedLink } | null)?.share
+    const params = new URLSearchParams(location.search)
+    const add = params.get('add') === '1'
+    if ((!share && !add) || handledEntry.current === location.key) return
+    handledEntry.current = location.key
+    if (share && 'error' in share) toast(share.error)
+    if (add) params.delete('add')
+    const search = params.toString()
+    navigate(
+      { pathname: location.pathname, search: search ? `?${search}` : '', hash: location.hash },
+      { replace: true, state: null },
+    )
+  }, [location, navigate, toast])
   useEffect(() => {
     if (form || deleting) return
     const keydown = (event: KeyboardEvent) => {
@@ -241,9 +271,10 @@ export function LibraryPage() {
           )}
           {form && (
             <LinkFormDialog
-              key={form.link?.id || form.url || 'new'}
+              key={form.entry || form.link?.id || form.url || 'new'}
               link={form.link}
               initialUrl={form.url}
+              initialTitle={form.title}
               onClose={() => setForm(null)}
               onEditDuplicate={(link) => setForm({ link })}
             />

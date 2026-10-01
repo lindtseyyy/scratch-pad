@@ -3,7 +3,8 @@ import { Modal, Button, Field, Input, Textarea, InlineError } from '../../compon
 import { TagInput } from '../tags/TagInput'
 import { useTags } from '../tags/hooks'
 import { useLinkByUrl, useSaveLink } from './hooks'
-import { defaultTitle, normalizeUrl } from '../../lib/url'
+import { defaultTitle, LINK_TITLE_MAX_LENGTH, normalizeUrl } from '../../lib/url'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { detectSource } from '../../lib/source'
 import { errorMessage } from '../../lib/errors'
 import { useToast } from '../../components/ui/Toast'
@@ -12,16 +13,19 @@ import type { SavedLink } from './api'
 export function LinkFormDialog({
   link,
   initialUrl = '',
+  initialTitle = '',
   onClose,
   onEditDuplicate,
 }: {
   link?: SavedLink
   initialUrl?: string
+  initialTitle?: string
   onClose: () => void
   onEditDuplicate: (link: SavedLink) => void
 }) {
   const [url, setUrl] = useState(link?.url || initialUrl)
-  const [title, setTitle] = useState(link?.title || '')
+  const [title, setTitle] = useState(link?.title ?? initialTitle)
+  const online = useOnlineStatus()
   const [source, setSource] = useState(link?.source || (initialUrl ? detectSource(initialUrl) : ''))
   const [sourceEdited, setSourceEdited] = useState(!!link)
   const [description, setDescription] = useState(link?.description || '')
@@ -39,7 +43,7 @@ export function LinkFormDialog({
   const duplicate = useLinkByUrl(normalized, link?.id)
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (save.isPending) return
+    if (save.isPending || !online) return
     setError('')
     try {
       const normalizedUrl = normalizeUrl(url)
@@ -61,7 +65,12 @@ export function LinkFormDialog({
     <Modal
       variant="page"
       compactAction={
-        <Button type="submit" form="link-form" disabled={save.isPending || !url.trim()}>
+        <Button
+          type="submit"
+          form="link-form"
+          disabled={!online || save.isPending || !url.trim()}
+          aria-describedby={!online ? 'link-offline-hint' : undefined}
+        >
           {save.isPending ? 'Saving…' : link ? 'Save changes' : 'Save link'}
         </Button>
       }
@@ -87,6 +96,11 @@ export function LinkFormDialog({
         }}
       >
         {error && <InlineError>{error}</InlineError>}
+        {!online && (
+          <p id="link-offline-hint" role="status" className="text-sm text-muted">
+            Reconnect to save.
+          </p>
+        )}
         <fieldset disabled={save.isPending} className="space-y-4">
           <Field id="link-url" label="URL">
             <Input
@@ -142,7 +156,7 @@ export function LinkFormDialog({
               data-autofocus={initialUrl || link ? true : undefined}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              maxLength={300}
+              maxLength={LINK_TITLE_MAX_LENGTH}
               placeholder="What would you like to remember?"
               aria-describedby="link-title-hint"
             />
@@ -194,7 +208,11 @@ export function LinkFormDialog({
             <Button variant="secondary" type="button" onClick={onClose} disabled={save.isPending}>
               Cancel
             </Button>
-            <Button type="submit" disabled={save.isPending || !url.trim()}>
+            <Button
+              type="submit"
+              disabled={!online || save.isPending || !url.trim()}
+              aria-describedby={!online ? 'link-offline-hint' : undefined}
+            >
               {save.isPending ? 'Saving…' : link ? 'Save changes' : 'Save link'}
             </Button>
           </div>

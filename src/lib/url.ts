@@ -1,3 +1,5 @@
+export const LINK_TITLE_MAX_LENGTH = 300
+
 export function normalizeUrl(input: string): string {
   const trimmed = input.trim()
   if (!trimmed || /\s/.test(trimmed)) throw new Error('Enter a valid web address without spaces.')
@@ -53,5 +55,7 @@ export function defaultTitle(url: string): string {
     .replace(/\.(html?|md|php)$/i, '')
     .replace(/[-_]+/g, ' ')
     .trim()
-  return title ? (title[0].toUpperCase() + title.slice(1)).slice(0, 300) : domainOf(parsed.href)
+  return title
+    ? (title[0].toUpperCase() + title.slice(1)).slice(0, LINK_TITLE_MAX_LENGTH)
+    : domainOf(parsed.href)
 }

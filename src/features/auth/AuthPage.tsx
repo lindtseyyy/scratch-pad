@@ -1,24 +1,26 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { Bookmark } from 'lucide-react'
 import { useAuth } from './AuthProvider'
 import { authEmailDomain, getSupabase } from '../../lib/supabase'
 import { isValidUsername, usernameToEmail } from '../../lib/auth-email'
 import { isStrongPassword } from '../../lib/password-rules'
 import { errorMessage } from '../../lib/errors'
+import { authDestination } from '../../lib/auth-redirect'
 import { Button, Field, InlineError, Input, Spinner } from '../../components/ui/primitives'
 import { PasswordRules } from './PasswordRules'
 import { AppFooter } from '../../components/layout/AppFooter'
 
 export function AuthPage({ signup = false }: { signup?: boolean }) {
   const { session, loading, error: authError } = useAuth()
+  const location = useLocation()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   if (loading) return <Spinner />
-  if (session) return <Navigate to="/" replace />
+  if (session) return <Navigate to={authDestination(location.state)} replace />
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     setError('')
@@ -139,6 +141,8 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
             <Link
               className="font-medium text-accent hover:underline"
               to={signup ? '/login' : '/signup'}
+              state={location.state}
+              replace
             >
               {signup ? 'Log in' : 'Create an account'}
             </Link>

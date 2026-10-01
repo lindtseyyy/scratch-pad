@@ -25,22 +25,48 @@ export default defineConfig({
     channel: 'chrome',
   },
   projects: [
-    { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 7'], defaultBrowserType: 'chromium' } },
+    { name: 'desktop', testIgnore: '**/pwa.spec.ts', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'mobile',
+      testIgnore: '**/pwa.spec.ts',
+      use: { ...devices['Pixel 7'], defaultBrowserType: 'chromium' },
+    },
     {
       name: 'small',
+      testIgnore: '**/pwa.spec.ts',
       use: { viewport: { width: 320, height: 568 }, hasTouch: true, isMobile: true },
     },
-    { name: 'tablet', use: { ...devices['iPad Mini'], defaultBrowserType: 'chromium' } },
-  ],
-  webServer: {
-    command: 'npm run dev -- --port 5174 --strictPort',
-    url: 'http://127.0.0.1:5174',
-    reuseExistingServer: false,
-    env: {
-      VITE_SUPABASE_URL: local.API_URL,
-      VITE_SUPABASE_ANON_KEY: local.PUBLISHABLE_KEY || local.ANON_KEY,
-      VITE_AUTH_EMAIL_DOMAIN: 'users.scratch-pad.test',
+    {
+      name: 'tablet',
+      testIgnore: '**/pwa.spec.ts',
+      use: { ...devices['iPad Mini'], defaultBrowserType: 'chromium' },
     },
-  },
+    {
+      name: 'pwa',
+      testMatch: '**/pwa.spec.ts',
+      use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:5175' },
+    },
+  ],
+  webServer: [
+    {
+      command: 'npm run dev -- --port 5174 --strictPort',
+      url: 'http://127.0.0.1:5174',
+      reuseExistingServer: false,
+      env: {
+        VITE_SUPABASE_URL: local.API_URL,
+        VITE_SUPABASE_ANON_KEY: local.PUBLISHABLE_KEY || local.ANON_KEY,
+        VITE_AUTH_EMAIL_DOMAIN: 'users.scratch-pad.test',
+      },
+    },
+    {
+      command: 'npm run build && npm run preview -- --port 5175 --strictPort',
+      url: 'http://127.0.0.1:5175',
+      reuseExistingServer: false,
+      env: {
+        VITE_SUPABASE_URL: local.API_URL,
+        VITE_SUPABASE_ANON_KEY: local.PUBLISHABLE_KEY || local.ANON_KEY,
+        VITE_AUTH_EMAIL_DOMAIN: 'users.scratch-pad.test',
+      },
+    },
+  ],
 })

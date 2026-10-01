@@ -232,6 +232,8 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
       await page.getByLabel('Username', { exact: true }).fill(username)
       await page.getByLabel('Password', { exact: true }).fill(password)
       await page.getByRole('button', { name: 'Log in', exact: true }).click()
+      // A previous sign-out remembers Settings; choose the screen under test explicitly.
+      await page.getByRole('link', { name: 'Library', exact: true }).click()
       await expect(page.getByRole('article')).toHaveCount(37)
       await checkScreen(page, info, 'library', theme)
       if (compact) await page.getByRole('button', { name: /^Filters/ }).click()

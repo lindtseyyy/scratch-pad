@@ -1,5 +1,5 @@
 import { Component, lazy, Suspense, type ErrorInfo, type ReactNode } from 'react'
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Bookmark } from 'lucide-react'
 import { configurationError } from './lib/supabase'
@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from './features/auth/AuthProvider'
 import { ThemeProvider } from './hooks/useTheme'
 import { ToastProvider } from './components/ui/Toast'
 import { AppLayout } from './components/layout/AppLayout'
+import { PwaUpdater } from './components/PwaUpdater'
 import { Button, InlineError, Spinner } from './components/ui/primitives'
 
 const AuthPage = lazy(() =>
@@ -21,26 +22,30 @@ const TagsPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import('./features/settings/SettingsPage').then((module) => ({ default: module.SettingsPage })),
 )
+const SharePage = lazy(() =>
+  import('./features/share/SharePage').then((module) => ({ default: module.SharePage })),
+)
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true },
-    mutations: { retry: false },
+    mutations: { retry: false, networkMode: 'always' },
   },
 })
 function RequireAuth() {
   const { session, loading, error } = useAuth()
+  const location = useLocation()
   if (loading) return <Spinner label="Opening Scratch-Pad…" />
   if (error)
     return (
       <main className="page">
         <InlineError>{error}</InlineError>
-        <Button className="mt-4" onClick={() => location.reload()}>
+        <Button className="mt-4" onClick={() => window.location.reload()}>
           Reload
         </Button>
       </main>
     )
-  return session ? <Outlet /> : <Navigate to="/login" replace />
+  return session ? <Outlet /> : <Navigate to="/login" replace state={{ from: location }} />
 }
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean }> {
   state = { error: false }
@@ -85,6 +90,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <ToastProvider>
+            <PwaUpdater />
             <BrowserRouter>
               <AuthProvider>
                 <Suspense fallback={<Spinner label="Opening page…" />}>
@@ -92,6 +98,7 @@ export default function App() {
                     <Route path="/login" element={<AuthPage key="login" />} />
                     <Route path="/signup" element={<AuthPage signup key="signup" />} />
                     <Route element={<RequireAuth />}>
+                      <Route path="share" element={<SharePage />} />
                       <Route element={<AppLayout />}>
                         <Route index element={<LibraryPage />} />
                         <Route path="tags" element={<TagsPage />} />

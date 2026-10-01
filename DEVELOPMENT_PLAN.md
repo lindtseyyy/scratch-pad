@@ -543,13 +543,13 @@ Each phase ends with something working and testable.
 - Duplicate-URL notice
 - Light, dark and system themes
 - Responsive layout; keyboard shortcuts for fast saving
+- **Mobile share target (PWA), implemented October 1, 2026.** Installable shell, Share → Scratch-Pad, shared URL/title preserved across login and signup, offline connection notices, and explicit update prompts. See [PWA_PLAN.md](PWA_PLAN.md); physical-device verification remains pending.
 
 ### Later: high value for the core problem
 These directly reduce the "links scattered across apps" problem, so do them first after the MVP:
-1. **Mobile share target (PWA).** Install the app on your phone and use the OS **Share → Revisit** menu from Messenger, YouTube, Reddit and so on. This is probably the biggest single improvement after the MVP.
-2. **Bookmarklet.** One click in a desktop browser opens the add dialog with the current page's URL and title filled in. Tiny effort.
-3. **Bulk import.** Paste a block of text (e.g. copied from Notes); the app extracts every URL and lets you tag them in one pass. Useful for moving your existing links over.
-4. **Auto-fetch the page title.** A small Supabase Edge Function fetches the page's `<title>`/`og:title` when you paste a URL.
+1. **Bookmarklet.** One click in a desktop browser opens the add dialog with the current page's URL and title filled in. Tiny effort.
+2. **Bulk import.** Paste a block of text (e.g. copied from Notes); the app extracts every URL and lets you tag them in one pass. Useful for moving your existing links over.
+3. **Auto-fetch the page title.** A small Supabase Edge Function fetches the page's `<title>`/`og:title` when you paste a URL.
 
 ### Later: nice to have
 - "Visited / to revisit" status, or a pinned/favorite flag
