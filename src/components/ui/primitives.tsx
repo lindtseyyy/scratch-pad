@@ -1,5 +1,6 @@
 import {
   Dialog,
+  DialogBackdrop,
   DialogPanel,
   DialogTitle,
   Description,
@@ -7,6 +8,7 @@ import {
   ListboxButton,
   ListboxOption,
   ListboxOptions,
+  Transition,
 } from '@headlessui/react'
 import { Check, ChevronDown, X, LoaderCircle } from 'lucide-react'
 import { useEffect, useRef } from 'react'
@@ -71,6 +73,7 @@ export function Select({
         </span>
       </ListboxButton>
       <ListboxOptions
+        transition
         anchor={{ to: 'bottom start', gap: 4, padding: 8 }}
         modal={false}
         className="dropdown-panel w-[var(--button-width)]"
@@ -150,6 +153,8 @@ export function Modal({
   title,
   description,
   onClose,
+  open,
+  afterLeave,
   variant = 'page',
   compactAction,
   children,
@@ -157,6 +162,8 @@ export function Modal({
   title: string
   description?: string
   onClose: () => void
+  open: boolean
+  afterLeave: () => void
   variant?: 'page' | 'sheet'
   compactAction?: ReactNode
   children: ReactNode
@@ -173,44 +180,59 @@ export function Modal({
     return () => cancelAnimationFrame(frame)
   }, [])
   return (
-    <Dialog open onClose={onClose} className="fixed inset-0 z-40">
-      <div className="fixed inset-0 bg-black/35" aria-hidden="true" />
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-end justify-center sm:items-center sm:p-6">
-          <DialogPanel
-            ref={panelRef}
-            data-modal-panel
-            className={`flex max-h-dvh w-full flex-col border border-line bg-surface sm:max-h-[calc(100dvh-3rem)] sm:max-w-lg sm:rounded-lg ${variant === 'page' ? 'h-dvh sm:h-auto' : 'rounded-t-xl'}`}
-          >
-            <div
-              className={`flex shrink-0 items-center gap-3 bg-surface pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:pt-4 ${variant === 'page' ? 'border-b border-line pb-3 sm:border-0 sm:pb-0' : 'pt-5'}`}
+    <Transition appear show={open} afterLeave={afterLeave}>
+      <Dialog onClose={onClose} className="fixed inset-0 z-40">
+        <DialogBackdrop
+          transition
+          className="modal-backdrop fixed inset-0 bg-black/40 data-closed:opacity-0"
+          aria-hidden="true"
+        />
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center sm:items-center sm:p-6">
+            <DialogPanel
+              ref={panelRef}
+              data-modal-panel
+              inert={!open}
+              transition
+              data-modal-variant={variant}
+              className={`modal-panel flex w-full flex-col border border-line bg-surface sm:max-h-[calc(100dvh-3rem)] sm:max-w-lg sm:rounded-lg ${variant === 'page' ? 'max-h-dvh h-dvh sm:h-auto' : 'max-h-[85dvh] rounded-t-2xl'}`}
             >
-              <Button
-                type="button"
-                variant="ghost"
-                aria-label="Close dialog"
-                onClick={onClose}
-                className={`shrink-0 px-2 sm:order-3 sm:-mr-2 ${variant === 'sheet' ? 'order-3 -mr-2' : '-ml-2 sm:ml-0'}`}
-              >
-                <X size={18} aria-hidden="true" />
-              </Button>
-              <DialogTitle className="min-w-0 flex-1 break-words text-lg font-semibold">
-                {title}
-              </DialogTitle>
-              {compactAction && <div className="shrink-0 sm:hidden">{compactAction}</div>}
-            </div>
-            <div className="min-h-0 overflow-y-auto pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
-              {description && (
-                <Description className="mb-5 break-words text-sm text-muted">
-                  {description}
-                </Description>
+              {variant === 'sheet' && (
+                <div
+                  aria-hidden="true"
+                  className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-line sm:hidden"
+                />
               )}
-              {children}
-            </div>
-          </DialogPanel>
+              <div
+                className={`flex shrink-0 items-center gap-3 bg-surface pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:pt-4 ${variant === 'page' ? 'border-b border-line pb-3 sm:border-0 sm:pb-0' : 'pt-3'}`}
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  aria-label="Close dialog"
+                  onClick={onClose}
+                  className={`shrink-0 px-2 sm:order-3 sm:-mr-2 ${variant === 'sheet' ? 'order-3 -mr-2' : '-ml-2 sm:ml-0'}`}
+                >
+                  <X size={18} aria-hidden="true" />
+                </Button>
+                <DialogTitle className="min-w-0 flex-1 break-words text-lg font-semibold">
+                  {title}
+                </DialogTitle>
+                {compactAction && <div className="shrink-0 sm:hidden">{compactAction}</div>}
+              </div>
+              <div className="min-h-0 overflow-y-auto overscroll-contain pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
+                {description && (
+                  <Description className="mb-5 break-words text-sm text-muted">
+                    {description}
+                  </Description>
+                )}
+                {children}
+              </div>
+            </DialogPanel>
+          </div>
         </div>
-      </div>
-    </Dialog>
+      </Dialog>
+    </Transition>
   )
 }
 export function EmptyState({

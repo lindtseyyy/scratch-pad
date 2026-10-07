@@ -5,6 +5,7 @@ import { useTags } from '../tags/hooks'
 import { useLinkByUrl, useSaveLink } from './hooks'
 import { defaultTitle, LINK_TITLE_MAX_LENGTH, normalizeUrl } from '../../lib/url'
 import { useOnlineStatus } from '../../hooks/useOnlineStatus'
+import { useModalTransition } from '../../hooks/useModalTransition'
 import { detectSource } from '../../lib/source'
 import { errorMessage } from '../../lib/errors'
 import { useToast } from '../../components/ui/Toast'
@@ -14,15 +15,18 @@ export function LinkFormDialog({
   link,
   initialUrl = '',
   initialTitle = '',
+  popup = false,
   onClose,
   onEditDuplicate,
 }: {
   link?: SavedLink
   initialUrl?: string
   initialTitle?: string
-  onClose: () => void
+  popup?: boolean
+  onClose: (reason: 'saved' | 'cancelled') => void
   onEditDuplicate: (link: SavedLink) => void
 }) {
+  const modal = useModalTransition()
   const [url, setUrl] = useState(link?.url || initialUrl)
   const [title, setTitle] = useState(link?.title ?? initialTitle)
   const online = useOnlineStatus()
@@ -34,6 +38,13 @@ export function LinkFormDialog({
   const save = useSaveLink()
   const tags = useTags()
   const toast = useToast()
+  const cancel = () => {
+    if (!modal.open || save.isPending) return
+    // Cancelling an extension window closes that entire window immediately.
+    // Library dialogs retain their content for the animated exit instead.
+    if (popup) onClose('cancelled')
+    else modal.close(() => onClose('cancelled'))
+  }
   let normalized = ''
   try {
     normalized = normalizeUrl(url)
@@ -43,7 +54,7 @@ export function LinkFormDialog({
   const duplicate = useLinkByUrl(normalized, link?.id)
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (save.isPending || !online) return
+    if (!modal.open || save.isPending || !online) return
     setError('')
     try {
       const normalizedUrl = normalizeUrl(url)
@@ -56,13 +67,15 @@ export function LinkFormDialog({
         tags: tagNames,
       })
       toast(link ? 'Link updated.' : 'Link saved for later.')
-      onClose()
+      modal.close(() => onClose('saved'))
     } catch (error) {
       setError(errorMessage(error))
     }
   }
   return (
     <Modal
+      open={modal.open}
+      afterLeave={modal.afterLeave}
       variant="page"
       compactAction={
         <Button
@@ -80,9 +93,7 @@ export function LinkFormDialog({
           ? 'Update the details. The original save date stays the same.'
           : 'A link, a little context, and a way back.'
       }
-      onClose={() => {
-        if (!save.isPending) onClose()
-      }}
+      onClose={cancel}
     >
       <form
         id="link-form"
@@ -139,7 +150,7 @@ export function LinkFormDialog({
               <button
                 type="button"
                 className="tap font-medium text-accent underline"
-                onClick={() => onEditDuplicate(duplicate.data!)}
+                onClick={() => modal.close(() => onEditDuplicate(duplicate.data!))}
               >
                 Edit the saved link
               </button>
@@ -205,7 +216,7 @@ export function LinkFormDialog({
         <div className="sticky bottom-0 hidden items-center justify-between gap-4 border-t border-line bg-surface py-4 sm:flex">
           <span className="hidden text-xs text-muted fine:block">Ctrl / ⌘ + Enter to save</span>
           <div className="ml-auto flex gap-2">
-            <Button variant="secondary" type="button" onClick={onClose} disabled={save.isPending}>
+            <Button variant="secondary" type="button" onClick={cancel} disabled={save.isPending}>
               Cancel
             </Button>
             <Button

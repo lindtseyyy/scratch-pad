@@ -129,6 +129,7 @@ export function TagInput({
                 <ChevronDown size={16} aria-hidden="true" />
               </ComboboxButton>
               <ComboboxOptions
+                transition
                 anchor={{ to: 'bottom start', gap: 4, padding: 8 }}
                 modal={false}
                 className="dropdown-panel w-[var(--input-width)] empty:invisible"

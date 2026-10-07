@@ -112,6 +112,7 @@ export function TagsPage() {
   const [sort, setSort] = useState('name')
   const [name, setName] = useState('')
   const [deleting, setDeleting] = useState<Tag | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const [error, setError] = useState('')
   const [deleteError, setDeleteError] = useState('')
   const create = useCreateTag()
@@ -205,6 +206,7 @@ export function TagsPage() {
               onDelete={() => {
                 setDeleteError('')
                 setDeleting(tag)
+                setDeleteOpen(true)
               }}
             />
           ))
@@ -212,11 +214,13 @@ export function TagsPage() {
       </div>
       {deleting && (
         <Modal
+          open={deleteOpen}
+          afterLeave={() => setDeleting(null)}
           variant="sheet"
           title={`Delete “${deleting.name}”?`}
           description={`This removes the tag from ${deleting.link_count} ${deleting.link_count === 1 ? 'link' : 'links'}. All of your links will be kept.`}
           onClose={() => {
-            if (!remove.isPending) setDeleting(null)
+            if (!remove.isPending) setDeleteOpen(false)
           }}
         >
           {deleteError && <InlineError>{deleteError}</InlineError>}
@@ -225,7 +229,7 @@ export function TagsPage() {
               variant="secondary"
               data-autofocus
               disabled={remove.isPending}
-              onClick={() => setDeleting(null)}
+              onClick={() => setDeleteOpen(false)}
             >
               Keep tag
             </Button>
@@ -235,7 +239,7 @@ export function TagsPage() {
               onClick={async () => {
                 try {
                   await remove.mutateAsync(deleting.id)
-                  setDeleting(null)
+                  setDeleteOpen(false)
                   toast('Tag deleted. Your links are still here.')
                 } catch (error) {
                   setDeleteError(errorMessage(error))

@@ -59,6 +59,7 @@ export function AppLayout() {
                 <ChevronDown size={13} aria-hidden="true" />
               </MenuButton>
               <MenuItems
+                transition
                 anchor="bottom end"
                 className="dropdown-panel min-w-40 [--anchor-gap:4px] [--anchor-padding:8px]"
               >

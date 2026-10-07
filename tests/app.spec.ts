@@ -64,6 +64,7 @@ test('account, library, tags, filters, themes and password changes', async ({ pa
     await page.getByRole('button', { name: 'Save', exact: true }).click()
     await expect(page.getByText(/You saved this on/)).toBeVisible()
     await page.getByRole('button', { name: 'Edit the saved link' }).click()
+    await expect(page.getByRole('heading', { name: 'Edit link', exact: true })).toBeVisible()
     await page.getByLabel('Title', { exact: true }).fill('Supabase handbook')
     await page.getByRole('button', { name: 'Save changes' }).click()
     const edited = page.getByRole('article').filter({ hasText: 'Supabase handbook' })
@@ -136,12 +137,21 @@ test('account, library, tags, filters, themes and password changes', async ({ pa
     await page.getByRole('link', { name: 'Library', exact: true }).click()
     await expect(page.getByRole('article')).toHaveCount(2)
     const video = page.getByRole('article').filter({ hasText: 'A useful video' })
-    await video.getByRole('button', { name: 'Actions for A useful video' }).click()
-    await page.getByRole('menuitem', { name: 'Delete' }).click()
+    const openDelete = async () => {
+      await video.getByRole('button', { name: 'Actions for A useful video' }).click()
+      if (compact) {
+        await page
+          .getByRole('dialog', { name: 'Link actions' })
+          .getByRole('button', { name: 'Delete link' })
+          .click()
+      } else {
+        await page.getByRole('menuitem', { name: 'Delete' }).click()
+      }
+    }
+    await openDelete()
     await page.getByRole('button', { name: 'Keep link' }).click()
     await expect(page.getByRole('article')).toHaveCount(2)
-    await video.getByRole('button', { name: 'Actions for A useful video' }).click()
-    await page.getByRole('menuitem', { name: 'Delete' }).click()
+    await openDelete()
     await page.getByRole('button', { name: 'Delete link', exact: true }).click()
     await expect(page.getByRole('article')).toHaveCount(1)
     await page.screenshot({

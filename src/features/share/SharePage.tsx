@@ -3,5 +3,12 @@ import { parseShare } from '../../lib/share'
 
 export function SharePage() {
   const { search } = useLocation()
-  return <Navigate to="/" replace state={{ share: parseShare(new URLSearchParams(search)) }} />
+  const params = new URLSearchParams(search)
+  return (
+    <Navigate
+      to="/"
+      replace
+      state={{ share: parseShare(params), popup: params.get('popup') === '1' }}
+    />
+  )
 }

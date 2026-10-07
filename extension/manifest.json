@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Scratch-Pad",
+  "version": "1.0.0",
+  "description": "Save the current page or a link to Scratch-Pad.",
+  "icons": { "64": "icons/icon-64.png", "192": "icons/icon-192.png" },
+  "action": { "default_title": "Save to Scratch-Pad" },
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+  "permissions": ["contextMenus", "activeTab"],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+Shift+S" },
+      "description": "Save the current page"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "scratch-pad@lindtseyyy",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["browsingActivity", "websiteContent"]
+      }
+    }
+  }
+}

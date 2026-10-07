@@ -1,6 +1,31 @@
 import { LINK_TITLE_MAX_LENGTH, normalizeUrl } from './url'
+import { copyToClipboard } from './clipboard'
 
 export type SharedLink = { url: string; title: string } | { error: string }
+export type OutboundShare = { title: string; url: string; text?: string }
+
+export function canShare(payload?: OutboundShare): boolean {
+  if (typeof navigator === 'undefined' || !('share' in navigator)) return false
+  if (!payload || typeof navigator.canShare !== 'function') return true
+  try {
+    return navigator.canShare({ title: payload.title, text: payload.text, url: payload.url })
+  } catch {
+    return true
+  }
+}
+
+export async function shareLink({ title, url, text }: OutboundShare): Promise<boolean> {
+  if (canShare({ title, url, text })) {
+    try {
+      await navigator.share({ title, text, url })
+      return true
+    } catch (error) {
+      // Dismissing the OS sheet is not a failure; anything else falls back to copy.
+      if (error instanceof DOMException && error.name === 'AbortError') return true
+    }
+  }
+  return copyToClipboard(url)
+}
 
 function proseUrl(text: string): string {
   let url = text.match(/https?:\/\/[^\s<>"']+/i)?.[0] || ''

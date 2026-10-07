@@ -10,7 +10,7 @@ import { Button, EmptyState, InlineError, Input, Spinner } from '../../component
 import { useTags } from '../tags/hooks'
 import { useLinkCount, useLinks, useSources } from './hooks'
 import { LinkToolbar } from './LinkToolbar'
-import { LinkRow } from './LinkRow'
+import { LinkRow, type ViewDensity } from './LinkRow'
 import { LinkPagination } from './LinkPagination'
 import { LinkFormDialog } from './LinkFormDialog'
 import { DeleteLinkDialog } from './DeleteLinkDialog'
@@ -36,16 +36,42 @@ export function LibraryPage() {
   const total = useLinkCount()
   const [quickUrl, setQuickUrl] = useState('')
   const [quickError, setQuickError] = useState('')
+  const [density, setDensity] = useState<ViewDensity>(() => {
+    try {
+      return localStorage.getItem('scratchpad:view-density') === 'compact' ? 'compact' : 'detailed'
+    } catch {
+      return 'detailed'
+    }
+  })
+  const changeDensity = (next: ViewDensity) => {
+    setDensity(next)
+    try {
+      localStorage.setItem('scratchpad:view-density', next)
+    } catch {
+      // Private browsing keeps the default view.
+    }
+  }
   const [form, setForm] = useState<{
     url?: string
     title?: string
     link?: SavedLink
     entry?: string
+    popup?: boolean
   } | null>(() => {
-    const share = (location.state as { share?: SharedLink } | null)?.share
-    if (share && 'url' in share) return { url: share.url, title: share.title, entry: location.key }
-    return new URLSearchParams(location.search).get('add') === '1' ? {} : null
+    const state = location.state as { share?: SharedLink; popup?: boolean } | null
+    const share = state?.share
+    if (share && 'url' in share)
+      return { url: share.url, title: share.title, entry: location.key, popup: state?.popup }
+    const params = new URLSearchParams(location.search)
+    return params.get('add') === '1' ? { popup: params.get('popup') === '1' } : null
   })
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(
+    () => () => {
+      if (closeTimer.current !== null) clearTimeout(closeTimer.current)
+    },
+    [],
+  )
   const [deleting, setDeleting] = useState<SavedLink | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const quickRef = useRef<HTMLInputElement>(null)
@@ -67,7 +93,10 @@ export function LibraryPage() {
     if ((!share && !add) || handledEntry.current === location.key) return
     handledEntry.current = location.key
     if (share && 'error' in share) toast(share.error)
-    if (add) params.delete('add')
+    if (add) {
+      params.delete('add')
+      params.delete('popup')
+    }
     const search = params.toString()
     navigate(
       { pathname: location.pathname, search: search ? `?${search}` : '', hash: location.hash },
@@ -157,7 +186,7 @@ export function LibraryPage() {
             </p>
           )}
         </aside>
-        <div className="min-w-0 rounded-lg border border-line bg-surface p-3 sm:p-6">
+        <div className="min-w-0 max-sm:border-0 max-sm:bg-transparent max-sm:p-0 sm:rounded-lg sm:border sm:border-line sm:bg-surface sm:p-6">
           <div className="mb-3 flex items-start justify-between gap-3 sm:mb-6">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Library</h1>
@@ -199,6 +228,8 @@ export function LibraryPage() {
             tags={tags.data || []}
             sources={sources.data || []}
             searchRef={searchRef}
+            density={density}
+            onDensityChange={changeDensity}
           />
           {sources.isError && (
             <p role="alert" className="mb-3 text-xs text-danger">
@@ -248,12 +279,13 @@ export function LibraryPage() {
                 aria-label={`Saved links, page ${page}`}
                 aria-busy={links.isFetching}
                 tabIndex={-1}
-                className="scroll-mt-20 space-y-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:scroll-mt-4"
+                className={`scroll-mt-20 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:scroll-mt-4 ${density === 'compact' ? 'space-y-1.5' : 'space-y-3'}`}
               >
                 {rows.map((link) => (
                   <LinkRow
                     key={link.id}
                     link={link}
+                    density={density}
                     onEdit={() => setForm({ link })}
                     onDelete={() => setDeleting(link)}
                     onTag={(tag) => update({ tags: [...new Set([...filters.tags, tag])] })}
@@ -279,8 +311,17 @@ export function LibraryPage() {
               link={form.link}
               initialUrl={form.url}
               initialTitle={form.title}
-              onClose={() => setForm(null)}
-              onEditDuplicate={(link) => setForm({ link })}
+              popup={form.popup}
+              onClose={(reason) => {
+                setForm(null)
+                if (!form.popup) return
+                if (reason === 'saved') {
+                  closeTimer.current = setTimeout(() => window.close(), 600)
+                } else {
+                  window.close()
+                }
+              }}
+              onEditDuplicate={(link) => setForm({ link, popup: form.popup })}
             />
           )}
           {deleting && <DeleteLinkDialog link={deleting} onClose={() => setDeleting(null)} />}

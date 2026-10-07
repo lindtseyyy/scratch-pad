@@ -547,7 +547,7 @@ Each phase ends with something working and testable.
 
 ### Later: high value for the core problem
 These directly reduce the "links scattered across apps" problem, so do them first after the MVP:
-1. **Bookmarklet.** One click in a desktop browser opens the add dialog with the current page's URL and title filled in. Tiny effort.
+1. **Bookmarklet and browser extension, implemented October 4, 2026.** The toolbar button, keyboard shortcut, or bookmarklet opens the add dialog with the current page's URL and title. Context menus also save links and URLs from selections. Popup windows close after save or cancel. See [EXTENSION_PLAN.md](EXTENSION_PLAN.md) and [README.md](README.md#browser-extension); native browser verification and Firefox signing remain pending.
 2. **Bulk import.** Paste a block of text (e.g. copied from Notes); the app extracts every URL and lets you tag them in one pass. Useful for moving your existing links over.
 3. **Auto-fetch the page title.** A small Supabase Edge Function fetches the page's `<title>`/`og:title` when you paste a URL.
 

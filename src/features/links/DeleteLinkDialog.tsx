@@ -3,23 +3,32 @@ import { Button, InlineError, Modal } from '../../components/ui/primitives'
 import { useToast } from '../../components/ui/Toast'
 import { errorMessage } from '../../lib/errors'
 import { useDeleteLink } from './hooks'
+import { useModalTransition } from '../../hooks/useModalTransition'
 import type { SavedLink } from './api'
 export function DeleteLinkDialog({ link, onClose }: { link: SavedLink; onClose: () => void }) {
+  const modal = useModalTransition()
   const mutation = useDeleteLink()
   const [error, setError] = useState('')
   const toast = useToast()
   return (
     <Modal
+      open={modal.open}
+      afterLeave={modal.afterLeave}
       variant="sheet"
       title="Delete this link?"
       description={`“${link.title}” will be removed from your library. Its tags will be kept.`}
       onClose={() => {
-        if (!mutation.isPending) onClose()
+        if (!mutation.isPending) modal.close(onClose)
       }}
     >
       {error && <InlineError>{error}</InlineError>}
       <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
-        <Button variant="secondary" data-autofocus onClick={onClose} disabled={mutation.isPending}>
+        <Button
+          variant="secondary"
+          data-autofocus
+          onClick={() => modal.close(onClose)}
+          disabled={mutation.isPending}
+        >
           Keep link
         </Button>
         <Button
@@ -29,7 +38,7 @@ export function DeleteLinkDialog({ link, onClose }: { link: SavedLink; onClose: 
             try {
               await mutation.mutateAsync(link.id)
               toast('Link deleted.')
-              onClose()
+              modal.close(onClose)
             } catch (error) {
               setError(errorMessage(error))
             }

@@ -60,6 +60,165 @@ async function accessible(page: Page) {
   ).toEqual([])
 }
 
+type PopupWindow = typeof window & {
+  closeCalls: { notice: string; delay: number | null }[]
+}
+
+async function stubWindowClose(page: Page) {
+  await page.addInitScript(() => {
+    const popup = window as PopupWindow
+    popup.closeCalls = []
+    let savedAt: number | null = null
+    new MutationObserver(() => {
+      const notice =
+        document.querySelector('[role="status"][aria-live="polite"]')?.textContent || ''
+      if (/Link saved for later\.|Link updated\./.test(notice) && savedAt === null)
+        savedAt = performance.now()
+    }).observe(document, { subtree: true, childList: true, characterData: true })
+    window.close = () => {
+      popup.closeCalls.push({
+        notice: document.querySelector('[role="status"][aria-live="polite"]')?.textContent || '',
+        delay: savedAt === null ? null : performance.now() - savedAt,
+      })
+    }
+  })
+}
+
+async function closeCalls(page: Page) {
+  return page.evaluate(() => (window as PopupWindow).closeCalls)
+}
+
+async function expectSavedPopupClose(page: Page, notice = 'Link saved for later.') {
+  await expect(page.getByRole('status').filter({ hasText: notice })).toBeVisible()
+  await expect.poll(async () => (await closeCalls(page)).length).toBe(1)
+  const [call] = await closeCalls(page)
+  expect(call.notice).toContain(notice)
+  // Leave the success notice visible for roughly 600ms before closing.
+  expect(call.delay).toBeGreaterThanOrEqual(550)
+}
+
+test('a popup share closes after saving through login', async ({ page, account }) => {
+  await stubWindowClose(page)
+  await page.goto('/share?url=https://example.com/popup&title=Popup%20share&popup=1')
+  await page.getByRole('link', { name: 'Create an account' }).click()
+  await page.getByRole('link', { name: 'Log in', exact: true }).click()
+  await login(page, account)
+  await expect(page.getByLabel('URL', { exact: true })).toHaveValue('https://example.com/popup')
+  await expect(page.getByLabel('Title', { exact: true })).toHaveValue('Popup share')
+  await expect(page).toHaveURL(/\/$/)
+  await page.getByRole('button', { name: 'Save link', exact: true }).click()
+  await expectSavedPopupClose(page)
+})
+
+test('a fresh share window can close itself after login and saving', async ({
+  page,
+  account,
+  baseURL,
+}) => {
+  // Replace Playwright's initial blank page, matching a window created at the share URL.
+  await page.evaluate(
+    (url) => window.location.replace(url),
+    new URL('/share?url=https://example.com/real-close&popup=1', baseURL).href,
+  )
+  await login(page, account)
+  await expect(page.getByLabel('URL', { exact: true })).toHaveValue(
+    'https://example.com/real-close',
+  )
+  expect(await page.evaluate(() => window.history.length)).toBe(1)
+  const closed = page.waitForEvent('close', { timeout: 10_000 })
+  await page.getByRole('button', { name: 'Save link', exact: true }).click()
+  await closed
+})
+
+test('popup Cancel and Escape close immediately', async ({ page, account }) => {
+  await stubWindowClose(page)
+  await page.goto('/login')
+  await login(page, account)
+  await expect(page.getByRole('heading', { name: 'Library', exact: true })).toBeVisible()
+  for (const cancel of ['button', 'escape']) {
+    await page.goto('/share?url=https://example.com/cancel&popup=1')
+    await expect(page.getByRole('dialog')).toBeVisible()
+    if (cancel === 'button') {
+      await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    } else {
+      await page.getByLabel('Title', { exact: true }).press('Escape')
+    }
+    expect(await closeCalls(page)).toEqual([{ notice: '', delay: null }])
+  }
+})
+
+test('an empty popup add preserves filters and closes after a save or cancel', async ({
+  page,
+  account,
+}) => {
+  await stubWindowClose(page)
+  await page.goto('/?add=1&popup=1&q=kept')
+  await login(page, account)
+  await expect(page).toHaveURL(/\?q=kept$/)
+  await expect(page.getByLabel('URL', { exact: true })).toHaveValue('')
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+  expect(await closeCalls(page)).toEqual([{ notice: '', delay: null }])
+  await page.reload()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await page.goto('/?add=1&popup=1')
+  await page.getByLabel('URL', { exact: true }).fill('https://example.com/empty-popup')
+  await page.getByRole('button', { name: 'Save link', exact: true }).click()
+  await expectSavedPopupClose(page)
+})
+
+test('editing a duplicate shared into a popup keeps the close flag', async ({ page, account }) => {
+  await stubWindowClose(page)
+  await page.goto('/share?url=https://example.com/duplicate&title=Original')
+  await login(page, account)
+  await page.getByRole('button', { name: 'Save link', exact: true }).click()
+  await expect(page.getByRole('article')).toContainText('Original')
+  await page.goto('/share?url=https://example.com/duplicate&popup=1')
+  await page.getByRole('button', { name: 'Edit the saved link' }).click()
+  await expect(page.getByRole('heading', { name: 'Edit link', exact: true })).toBeVisible()
+  await page.getByLabel('Title', { exact: true }).fill('Updated in popup')
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+  await expectSavedPopupClose(page, 'Link updated.')
+  await expect(page.getByRole('article')).toContainText('Updated in popup')
+})
+
+test('ordinary shares and add dialogs never close the window', async ({ page, account }) => {
+  await stubWindowClose(page)
+  await page.goto('/share?url=https://example.com/ordinary&title=Ordinary')
+  await login(page, account)
+  await page.clock.install()
+  await page.getByRole('button', { name: 'Save link', exact: true }).click()
+  await expect(page.getByRole('article')).toContainText('Ordinary')
+  // Advance past the popup delay to detect a stray scheduled close.
+  await page.clock.runFor(1000)
+  expect(await closeCalls(page)).toEqual([])
+  await page.goto('/share?url=https://example.com/cancel&popup=0')
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+  expect(await closeCalls(page)).toEqual([])
+  await page.goto('/?add=1')
+  await page.getByLabel('URL', { exact: true }).press('Escape')
+  expect(await closeCalls(page)).toEqual([])
+})
+
+test('failed popup saves keep the draft open', async ({ page, account }) => {
+  await stubWindowClose(page)
+  await page.goto('/share?url=https://example.com/retry&popup=1')
+  await login(page, account)
+  await page.route('**/rest/v1/rpc/save_link', (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: '{"message":"Try again"}',
+    }),
+  )
+  await page.getByRole('button', { name: 'Save link', exact: true }).click()
+  await expect(page.getByRole('dialog').getByRole('alert')).toBeVisible()
+  await expect(page.getByLabel('URL', { exact: true })).toHaveValue('https://example.com/retry')
+  expect(await closeCalls(page)).toEqual([])
+  await page.unroute('**/rest/v1/rpc/save_link')
+  await page.getByRole('button', { name: 'Save link', exact: true }).click()
+  await expectSavedPopupClose(page)
+})
+
 test('production manifest, icons and service worker', async ({ page, request }) => {
   await page.goto('/')
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
@@ -146,7 +305,8 @@ test('shares survive login, support duplicates and are consumed once', async ({
 test('a share survives account creation', async ({ page }) => {
   const username = `pwa_new_${Date.now().toString(36)}`
   try {
-    await page.goto('/share?url=https://example.com/new&title=First%20share')
+    await stubWindowClose(page)
+    await page.goto('/share?url=https://example.com/new&title=First%20share&popup=1')
     await page.getByRole('link', { name: 'Create an account' }).click()
     await page.getByLabel('Username', { exact: true }).fill(username)
     await page.getByLabel('Password', { exact: true }).fill(password)
@@ -154,6 +314,8 @@ test('a share survives account creation', async ({ page }) => {
     await page.getByRole('button', { name: 'Create account', exact: true }).click()
     await expect(page.getByLabel('URL', { exact: true })).toHaveValue('https://example.com/new')
     await expect(page.getByLabel('Title', { exact: true })).toHaveValue('First share')
+    await page.getByRole('button', { name: 'Save link', exact: true }).click()
+    await expectSavedPopupClose(page)
   } finally {
     execFileSync(
       'psql',

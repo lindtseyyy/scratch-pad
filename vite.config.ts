@@ -57,5 +57,5 @@ export default defineConfig({
       devOptions: { enabled: false },
     }),
   ],
-  test: { include: ['src/**/*.test.{ts,tsx}'] },
+  test: { include: ['src/**/*.test.{ts,tsx}', 'extension/**/*.test.js'] },
 })

@@ -1,10 +1,84 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { Transition } from '@headlessui/react'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
+import { LayoutList, Rows3, Search, SlidersHorizontal, X } from 'lucide-react'
 import { Button, Input, Select } from '../../components/ui/primitives'
 import { TagInput } from '../tags/TagInput'
 import type { Tag } from './api'
+import type { ViewDensity } from './LinkRow'
 import type { LinkFilters, Sort } from '../../hooks/useUrlFilters'
+
+function ActiveFilterChips({
+  filters,
+  onChange,
+}: {
+  filters: LinkFilters
+  onChange: (patch: Partial<LinkFilters>) => void
+}) {
+  const chips = [
+    ...filters.tags.map((name) => ({
+      key: `tag:${name}`,
+      label: name,
+      removeLabel: `Remove tag filter ${name}`,
+    })),
+    ...(filters.source
+      ? [
+          {
+            key: `source:${filters.source}`,
+            label: filters.source,
+            removeLabel: `Remove source filter ${filters.source}`,
+          },
+        ]
+      : []),
+    ...(filters.sort !== 'newest'
+      ? [
+          {
+            key: `sort:${filters.sort}`,
+            label: filters.sort === 'oldest' ? 'Oldest' : 'Title A–Z',
+            removeLabel: 'Reset sort to newest',
+          },
+        ]
+      : []),
+  ]
+  // Apply filters immediately while retaining departing chips for their exit.
+  const [retained, setRetained] = useState(chips)
+  const added = chips.filter((chip) => !retained.some((item) => item.key === chip.key))
+  if (added.length) setRetained([...retained, ...added])
+
+  return retained.map((chip) => {
+    const present = chips.some((item) => item.key === chip.key)
+    return (
+      <Transition
+        key={chip.key}
+        show={present}
+        as="div"
+        className="filter-chip shrink-0"
+        aria-hidden={!present || undefined}
+        inert={!present}
+        afterLeave={() => setRetained((items) => items.filter((item) => item.key !== chip.key))}
+      >
+        <div className="min-w-0 overflow-hidden">
+          <button
+            type="button"
+            className="tag gap-2 whitespace-nowrap"
+            aria-label={chip.removeLabel}
+            onClick={() => {
+              if (chip.key.startsWith('tag:'))
+                onChange({ tags: filters.tags.filter((tag) => tag !== chip.label) })
+              else if (chip.key.startsWith('source:')) onChange({ source: '' })
+              else onChange({ sort: 'newest' })
+            }}
+          >
+            <span className="max-w-40 truncate">{chip.label}</span>
+            <X size={14} aria-hidden="true" />
+          </button>
+        </div>
+      </Transition>
+    )
+  })
+}
+
 export function LinkToolbar({
   filters,
   update,
@@ -12,6 +86,8 @@ export function LinkToolbar({
   tags,
   sources,
   searchRef,
+  density,
+  onDensityChange,
 }: {
   filters: LinkFilters
   update: (patch: Partial<LinkFilters>, replace?: boolean) => void
@@ -19,6 +95,8 @@ export function LinkToolbar({
   tags: Tag[]
   sources: string[]
   searchRef: RefObject<HTMLInputElement | null>
+  density: ViewDensity
+  onDensityChange: (density: ViewDensity) => void
 }) {
   const location = useLocation()
   const navigationType = useNavigationType()
@@ -27,6 +105,7 @@ export function LinkToolbar({
     urlQuery: filters.query,
   })
   const [expanded, setExpanded] = useState(false)
+  const desktop = useMediaQuery('(min-width: 40rem)')
   const [observedLocation, setObservedLocation] = useState(location)
   if (observedLocation.key !== location.key) {
     setObservedLocation(location)
@@ -81,7 +160,7 @@ export function LinkToolbar({
     <>
       <div
         data-search-row
-        className="sticky top-0 z-10 mb-3 flex gap-2 border-b border-line bg-surface py-3 sm:static sm:flex-wrap sm:border-0 sm:py-0"
+        className="sticky top-0 z-10 mb-3 flex flex-wrap items-center gap-2 border-b border-line bg-canvas py-2.5 sm:static sm:flex-nowrap sm:border-0 sm:bg-transparent sm:py-0"
       >
         <div className="relative min-w-0 flex-1 sm:min-w-48">
           <Search
@@ -92,7 +171,7 @@ export function LinkToolbar({
           <Input
             ref={searchRef}
             aria-label="Search links"
-            placeholder="Search your links…"
+            placeholder="Search links…"
             className="pl-9 fine:pr-9"
             value={draft.urlQuery === filters.query ? draft.query : filters.query}
             onChange={(event) => {
@@ -105,6 +184,32 @@ export function LinkToolbar({
           <kbd className="pointer-events-none absolute right-3 top-2.5 hidden rounded border border-line px-1.5 text-xs text-muted fine:block">
             /
           </kbd>
+        </div>
+        <div
+          role="group"
+          aria-label="View density"
+          className="flex shrink-0 items-center rounded-md border border-line bg-surface"
+        >
+          <button
+            type="button"
+            className={`tap rounded-l-md px-2 text-muted hover:bg-soft hover:text-ink ${density === 'detailed' ? 'bg-soft text-ink' : ''}`}
+            aria-pressed={density === 'detailed'}
+            aria-label="Detailed view"
+            title="Detailed view"
+            onClick={() => onDensityChange('detailed')}
+          >
+            <LayoutList size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={`tap rounded-r-md border-l border-line px-2 text-muted hover:bg-soft hover:text-ink ${density === 'compact' ? 'bg-soft text-ink' : ''}`}
+            aria-pressed={density === 'compact'}
+            aria-label="Compact view"
+            title="Compact view"
+            onClick={() => onDensityChange('compact')}
+          >
+            <Rows3 size={16} aria-hidden="true" />
+          </button>
         </div>
         <Button
           variant="secondary"
@@ -139,114 +244,88 @@ export function LinkToolbar({
           />
         </div>
       </div>
-      {!expanded && active && (
-        <div
-          role="group"
-          aria-label="Active filters"
-          className="mb-3 flex items-center gap-2 overflow-x-auto pb-1 sm:hidden"
+      <Transition
+        show={!expanded && active}
+        as="div"
+        role="group"
+        aria-label="Active filters"
+        className="mb-3 flex items-center gap-2 overflow-x-auto pb-1 transition-opacity duration-150 data-closed:opacity-0 sm:hidden"
+      >
+        <ActiveFilterChips filters={filters} onChange={changeFilters} />
+        <Button
+          variant="ghost"
+          className="shrink-0 px-2 text-xs"
+          aria-label="Clear filters"
+          onClick={clearFilters}
         >
-          {filters.tags.map((name) => (
-            <button
-              key={name}
-              type="button"
-              className="tag shrink-0 gap-2"
-              aria-label={`Remove tag filter ${name}`}
-              onClick={() => changeFilters({ tags: filters.tags.filter((tag) => tag !== name) })}
-            >
-              <span className="max-w-40 truncate">{name}</span>
-              <X size={14} aria-hidden="true" />
-            </button>
-          ))}
-          {filters.source && (
-            <button
-              type="button"
-              className="tag shrink-0 gap-2"
-              aria-label={`Remove source filter ${filters.source}`}
-              onClick={() => changeFilters({ source: '' })}
-            >
-              <span className="max-w-40 truncate">{filters.source}</span>
-              <X size={14} aria-hidden="true" />
-            </button>
-          )}
-          {filters.sort !== 'newest' && (
-            <button
-              type="button"
-              className="tag shrink-0 gap-2"
-              aria-label="Reset sort to newest"
-              onClick={() => changeFilters({ sort: 'newest' })}
-            >
-              {filters.sort === 'oldest' ? 'Oldest' : 'Title A–Z'}
-              <X size={14} aria-hidden="true" />
-            </button>
-          )}
-          <Button
-            variant="ghost"
-            className="shrink-0 px-2 text-xs"
-            aria-label="Clear filters"
-            onClick={clearFilters}
-          >
-            Clear
-          </Button>
-        </div>
-      )}
+          Clear
+        </Button>
+      </Transition>
       <div
         id="library-filters"
-        className={`${expanded ? 'block' : 'hidden'} mb-3 space-y-3 border-b border-line pb-5 sm:block`}
+        className="filter-accordion"
+        data-expanded={expanded}
+        aria-hidden={(!expanded && !desktop) || undefined}
+        inert={!expanded && !desktop}
       >
-        <div className="flex gap-2 sm:hidden">
-          <div className="min-w-0 flex-1">
-            <label
-              id="mobile-source-label"
-              htmlFor="mobile-source"
-              className="mb-1 block text-xs text-muted"
-            >
-              Source
-            </label>
-            <Select
-              id="mobile-source"
-              value={filters.source}
-              onChange={(source) => changeFilters({ source })}
-              options={sourceOptions}
-            />
+        <div className="min-h-0 overflow-hidden">
+          <div className="mb-3 space-y-3 border-b border-line pb-5">
+            <div className="flex gap-2 sm:hidden">
+              <div className="min-w-0 flex-1">
+                <label
+                  id="mobile-source-label"
+                  htmlFor="mobile-source"
+                  className="mb-1 block text-xs text-muted"
+                >
+                  Source
+                </label>
+                <Select
+                  id="mobile-source"
+                  value={filters.source}
+                  onChange={(source) => changeFilters({ source })}
+                  options={sourceOptions}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <label
+                  id="mobile-sort-label"
+                  htmlFor="mobile-sort"
+                  className="mb-1 block text-xs text-muted"
+                >
+                  Sort links
+                </label>
+                <Select
+                  id="mobile-sort"
+                  value={filters.sort}
+                  onChange={(sort) => changeFilters({ sort: sort as Sort })}
+                  options={sortOptions}
+                />
+              </div>
+            </div>
+            <div className="flex items-end gap-3">
+              <div className="min-w-0 flex-1">
+                <label htmlFor="filter-tags" className="sr-only">
+                  Filter by tags
+                </label>
+                <TagInput
+                  id="filter-tags"
+                  value={filters.tags}
+                  onChange={(tags) => changeFilters({ tags })}
+                  suggestions={tags.map((tag) => tag.name)}
+                  allowCreate={false}
+                />
+              </div>
+              {active && (
+                <Button
+                  variant="ghost"
+                  onClick={clearFilters}
+                  className="shrink-0 whitespace-nowrap px-1 text-xs"
+                >
+                  Clear filters
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <label
-              id="mobile-sort-label"
-              htmlFor="mobile-sort"
-              className="mb-1 block text-xs text-muted"
-            >
-              Sort links
-            </label>
-            <Select
-              id="mobile-sort"
-              value={filters.sort}
-              onChange={(sort) => changeFilters({ sort: sort as Sort })}
-              options={sortOptions}
-            />
-          </div>
-        </div>
-        <div className="flex items-end gap-3">
-          <div className="min-w-0 flex-1">
-            <label htmlFor="filter-tags" className="sr-only">
-              Filter by tags
-            </label>
-            <TagInput
-              id="filter-tags"
-              value={filters.tags}
-              onChange={(tags) => changeFilters({ tags })}
-              suggestions={tags.map((tag) => tag.name)}
-              allowCreate={false}
-            />
-          </div>
-          {active && (
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-              className="shrink-0 whitespace-nowrap px-1 text-xs"
-            >
-              Clear filters
-            </Button>
-          )}
         </div>
       </div>
     </>

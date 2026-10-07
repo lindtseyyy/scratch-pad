@@ -11,13 +11,23 @@ const local = JSON.parse(
 )
 
 async function checkScreen(page: Page, info: TestInfo, screen: string, theme: string) {
-  await page.locator('.route-enter').evaluateAll(async (elements) => {
-    await Promise.all(
-      elements.flatMap((element) =>
-        element.getAnimations().map((animation) => animation.finished.catch(() => {})),
+  // Measure touch targets and capture layouts after finite motion settles. A
+  // scaling dialog temporarily makes a correct 44px target appear smaller.
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          document.querySelectorAll('[data-transition]').length +
+          document
+            .getAnimations()
+            .filter(
+              (animation) =>
+                animation.playState === 'running' &&
+                animation.effect?.getTiming().iterations !== Infinity,
+            ).length,
       ),
     )
-  })
+    .toBe(0)
   await expect
     .poll(() =>
       page.evaluate(
@@ -51,7 +61,9 @@ async function checkScreen(page: Page, info: TestInfo, screen: string, theme: st
             getComputedStyle(element).visibility !== 'hidden' &&
             !element.closest('[inert]') &&
             !(element.tagName === 'A' && element.closest('p')) &&
-            !element.classList.contains('sr-only')
+            !element.classList.contains('sr-only') &&
+            // Row tag chips render sleek but keep an expanded ::before tap area.
+            !element.hasAttribute('data-row-tag')
           )
         })
         .flatMap((element) => {
@@ -235,7 +247,7 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
       // A previous sign-out remembers Settings; choose the screen under test explicitly.
       await page.getByRole('link', { name: 'Library', exact: true }).click()
       await expect(page.getByRole('article')).toHaveCount(17)
-      await checkScreen(page, info, 'library', theme)
+      await checkScreen(page, info, 'library-detailed', theme)
       if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
       await checkSelectDropdown(
         page,
@@ -254,13 +266,34 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
       await checkTagDropdown(page, info, theme, 'library')
       if (compact) await page.getByRole('button', { name: /^Filters/ }).click()
       const reference = page.getByRole('article').filter({ hasText: 'Responsive reference' })
-      if (compact) {
-        const moreTags = reference.getByRole('button', { name: /Show \d+ more tags/ })
-        await expect(moreTags).toBeVisible()
-        await moreTags.click()
-        await expect(reference.getByRole('button', { name: /^Filter by / })).toHaveCount(8)
-        await reference.getByRole('button', { name: 'Show fewer tags' }).click()
-      }
+      // Tag chips live in a swipeable rail: all are rendered, none need expanding.
+      await expect(reference.locator('[data-tag-rail]')).toBeVisible()
+      await expect(reference.getByRole('button', { name: /^Filter by / })).toHaveCount(8)
+      await expect(reference.locator('time').first()).toContainText(/Just now|\d+[mhd] ago/)
+      // Long notes open a dedicated note modal.
+      const noted = page.getByRole('article').filter({ hasText: 'TTTTTTTTTTTTTTTTTTTT' }).first()
+      await noted.getByRole('button', { name: /^View full note/ }).click()
+      const noteDialog = page.getByRole('dialog', { name: 'Link Note' })
+      await expect(noteDialog).toBeVisible()
+      await expect(noteDialog.getByRole('button', { name: 'Copy note to clipboard' })).toBeVisible()
+      await noteDialog.getByRole('button', { name: 'Done' }).click()
+      await expect(noteDialog).not.toBeVisible()
+      // Density toggle persists between visits.
+      await page.getByRole('button', { name: 'Compact view' }).click()
+      await expect(page.getByRole('button', { name: 'Compact view' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+      expect(await page.evaluate(() => localStorage.getItem('scratchpad:view-density'))).toBe(
+        'compact',
+      )
+      await expect(page.getByRole('article')).toHaveCount(17)
+      await checkScreen(page, info, 'library-compact', theme)
+      await page.getByRole('button', { name: 'Detailed view' }).click()
+      await expect(page.getByRole('button', { name: 'Compact view' })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      )
       await reference.getByRole('button', { name: 'Filter by backend', exact: true }).click()
       await expect(page.getByRole('article')).toHaveCount(2)
       if (compact) {
@@ -354,8 +387,31 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
       await dialog.getByRole('button', { name: 'Close dialog' }).click()
 
       await reference.getByRole('button', { name: 'Actions for Responsive reference' }).click()
-      await checkScreen(page, info, 'row-menu', theme)
-      await page.getByRole('menuitem', { name: 'Delete', exact: true }).click()
+      if (compact) {
+        await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+        const sheet = page.getByRole('dialog', { name: 'Link actions' })
+        await expect(sheet.getByRole('link', { name: 'Open in browser' })).toBeVisible()
+        await expect(sheet.getByRole('button', { name: 'Copy link address' })).toBeVisible()
+        await expect(sheet.getByRole('button', { name: 'Share link…' })).toBeVisible()
+        await expect(sheet.getByRole('button', { name: 'Edit details' })).toBeVisible()
+        await expect(sheet.getByRole('button', { name: 'Delete link' })).toBeVisible()
+        await checkScreen(page, info, 'entry-action-sheet', theme)
+        const panel = sheet.locator('[data-modal-panel]')
+        const box = await panel.boundingBox()
+        // A bottom sheet is bottom-anchored with a rounded top; on short
+        // viewports a tag-heavy sheet may legitimately reach full height.
+        await expect(panel).toHaveClass(/rounded-t-2xl/)
+        expect(Math.round(box!.y + box!.height)).toBe(page.viewportSize()!.height)
+        await sheet.getByRole('button', { name: 'Copy link address' }).click()
+        await expect(page.getByText('Link address copied.')).toBeVisible()
+        await expect(sheet).not.toBeVisible()
+        await reference.getByRole('button', { name: 'Actions for Responsive reference' }).click()
+        await sheet.getByRole('button', { name: 'Delete link' }).click()
+      } else {
+        await checkScreen(page, info, 'row-menu', theme)
+        await expect(page.getByRole('menuitem', { name: 'Copy link', exact: true })).toBeVisible()
+        await page.getByRole('menuitem', { name: 'Delete', exact: true }).click()
+      }
       await expect(dialog.getByRole('button', { name: 'Keep link' })).toBeFocused()
       await checkScreen(page, info, 'delete-sheet', theme)
       if (compact) {

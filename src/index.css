@@ -45,6 +45,9 @@
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 }
 @layer base {
+  html {
+    scroll-padding-top: 4.5rem;
+  }
   body {
     @apply m-0 bg-canvas font-sans text-ink antialiased;
     font-size: 14px;
@@ -96,6 +99,122 @@
   a.tag {
     @apply touch:min-h-11 touch:min-w-11;
   }
+  /* Embedded row chips keep a sleek visual height; an invisible pseudo-element
+     preserves a comfortable tap target without ballooning the pill. */
+  button.tag[data-row-tag] {
+    @apply touch:min-h-0 touch:min-w-0;
+    position: relative;
+  }
+  button.tag[data-row-tag]::before {
+    content: '';
+    position: absolute;
+    inset: -4px -4px;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .card-interactive {
+    transition: transform 75ms ease-out;
+  }
+  .card-interactive:active {
+    transform: scale(0.995);
+    background-color: color-mix(in srgb, var(--soft) 40%, var(--surface));
+  }
+  .modal-backdrop {
+    transition: opacity 200ms ease-out;
+  }
+  .modal-backdrop[data-leave] {
+    transition-duration: 150ms;
+  }
+  .modal-panel {
+    transition: transform 200ms ease-out;
+  }
+  .modal-panel[data-modal-variant='sheet'] {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .modal-panel[data-closed] {
+    transform: translateY(100%);
+  }
+  .modal-panel[data-leave] {
+    transition-duration: 150ms;
+  }
+  @media (min-width: 40rem) {
+    .modal-panel {
+      transition:
+        transform 150ms ease-out,
+        opacity 150ms ease-out;
+    }
+    .modal-panel[data-modal-variant='sheet'] {
+      transition-timing-function: ease-out;
+    }
+    .modal-panel[data-closed] {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+  }
+  .filter-accordion {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+    /* Grid tracks are the plan's deliberate layout exception; no measured heights. */
+    transition:
+      grid-template-rows 200ms ease-out,
+      opacity 200ms ease-out,
+      visibility 0ms 200ms;
+  }
+  .filter-accordion[data-expanded='true'] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0ms;
+  }
+  @media (min-width: 40rem) {
+    .filter-accordion {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      visibility: visible;
+      transition: none;
+    }
+  }
+  .filter-chip {
+    display: grid;
+    grid-template-columns: 1fr;
+    transition:
+      grid-template-columns 150ms ease-out,
+      opacity 150ms ease-out;
+  }
+  .filter-chip[data-closed] {
+    grid-template-columns: 0fr;
+    opacity: 0;
+  }
+  .filter-chip button {
+    transition: transform 150ms ease-out;
+  }
+  .filter-chip[data-closed] button {
+    transform: scale(0.75);
+  }
+  .copy-feedback-icon svg {
+    transition:
+      transform 120ms ease-out,
+      opacity 120ms ease-out;
+  }
+  .copy-feedback-icon .copy-success {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  .copy-feedback-icon[data-copied] .copy-idle {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  .copy-feedback-icon[data-copied] .copy-success {
+    opacity: 1;
+    transform: scale(1);
+  }
   .tap {
     @apply relative inline-flex shrink-0 items-center justify-center touch:min-h-11 touch:min-w-11;
   }
@@ -105,6 +224,23 @@
     outline: none;
     scrollbar-color: var(--line) var(--surface);
     scrollbar-width: thin;
+    transform-origin: top;
+    transition:
+      transform 120ms ease-out,
+      opacity 120ms ease-out;
+  }
+  .dropdown-panel[data-anchor~='top'] {
+    transform-origin: bottom;
+  }
+  .dropdown-panel[data-closed] {
+    transform: translateY(-4px) scale(0.95);
+    opacity: 0;
+  }
+  .dropdown-panel[data-anchor~='top'][data-closed] {
+    transform: translateY(4px) scale(0.95);
+  }
+  .dropdown-panel[data-leave] {
+    transition-duration: 75ms;
   }
   .menu-item,
   .dropdown-option {
@@ -157,6 +293,22 @@
   *::before,
   *::after {
     transition-duration: 0ms !important;
+    transition-delay: 0ms !important;
     animation-duration: 0ms !important;
+    animation-delay: 0ms !important;
+  }
+  .modal-panel,
+  .dropdown-panel,
+  .card-interactive,
+  .filter-chip button,
+  .copy-feedback-icon svg,
+  .route-enter,
+  .nav-link::after {
+    transform: none !important;
+    translate: none !important;
+    scale: none !important;
+  }
+  .route-enter {
+    animation: none;
   }
 }

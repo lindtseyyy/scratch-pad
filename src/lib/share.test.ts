@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { parseShare } from './share'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { canShare, parseShare, shareLink } from './share'
 
 describe('shared links', () => {
   it('prefers a browser URL and page title over selected text', () => {
@@ -84,5 +84,36 @@ describe('shared links', () => {
     for (const url of ['https://', `https://example.com/${'x'.repeat(2048)}`]) {
       expect(parseShare(new URLSearchParams({ url }))).toHaveProperty('error')
     }
+  })
+})
+
+describe('outbound share', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+  it('reports no share support without a navigator share API', () => {
+    vi.stubGlobal('navigator', {})
+    expect(canShare()).toBe(false)
+  })
+  it('uses the Web Share API when available', async () => {
+    const share = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { share, canShare: () => true })
+    await expect(shareLink({ title: 'Example', url: 'https://example.com' })).resolves.toBe(true)
+    expect(share).toHaveBeenCalledWith({
+      title: 'Example',
+      text: undefined,
+      url: 'https://example.com',
+    })
+  })
+  it('treats dismissing the OS sheet as success', async () => {
+    const share = vi.fn().mockRejectedValue(new DOMException('cancelled', 'AbortError'))
+    vi.stubGlobal('navigator', { share })
+    await expect(shareLink({ title: 'Example', url: 'https://example.com' })).resolves.toBe(true)
+  })
+  it('falls back to the clipboard when sharing is unavailable', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
+    await expect(shareLink({ title: 'Example', url: 'https://example.com' })).resolves.toBe(true)
+    expect(writeText).toHaveBeenCalledWith('https://example.com')
   })
 })
