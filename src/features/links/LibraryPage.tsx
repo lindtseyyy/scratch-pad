@@ -206,7 +206,7 @@ export function LibraryPage() {
             <Input
               id="quick-url"
               ref={quickRef}
-              className="min-w-0 flex-1"
+              className="save-link-input min-w-0 flex-1"
               value={quickUrl}
               onChange={(e) => setQuickUrl(e.target.value)}
               placeholder="Paste a link to save…"

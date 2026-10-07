@@ -19,13 +19,13 @@ export function LinkPagination({
 }) {
   const first = (page - 1) * LINKS_PER_PAGE + 1
   return (
-    <div className="mt-5 flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-xs text-muted" role="status">
+    <div className="mt-5 flex flex-col items-center gap-3 border-t border-line pt-4">
+      <p className="text-center text-xs text-muted" role="status">
         Showing {first}–{first + count - 1} {matching ? 'matching' : 'saved'}{' '}
         {count === 1 ? 'link' : 'links'}
         {busy ? ' · Updating…' : ''}
       </p>
-      <nav aria-label="Link pagination" className="flex items-center justify-between gap-1.5">
+      <nav aria-label="Link pagination" className="flex items-center justify-center gap-1.5">
         <Button
           type="button"
           variant="secondary"

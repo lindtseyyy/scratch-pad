@@ -441,7 +441,8 @@ test('responsive screens, touch controls, filters and dialog actions', async ({ 
           .locator('meta[name="theme-color"]')
           .evaluateAll((elements) => elements.map((element) => element.getAttribute('content'))),
       ).toEqual(Array(2).fill(theme === 'light' ? '#181b18' : '#f8f8f7'))
-      await page.getByRole('button', { name: 'Sign out', exact: true }).click()
+      await page.getByRole('button', { name: 'Account menu', exact: true }).click()
+      await page.getByRole('menuitem', { name: 'Sign out', exact: true }).click()
       await expect(page).toHaveURL(/\/login$/)
     }
   } finally {

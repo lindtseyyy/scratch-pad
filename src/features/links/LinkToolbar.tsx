@@ -160,7 +160,7 @@ export function LinkToolbar({
     <>
       <div
         data-search-row
-        className="sticky top-0 z-10 mb-3 flex flex-wrap items-center gap-2 border-b border-line bg-canvas py-2.5 sm:static sm:flex-nowrap sm:border-0 sm:bg-transparent sm:py-0"
+        className="sticky top-0 z-10 mb-3 flex flex-wrap items-center gap-2 border-b border-line bg-canvas py-2.5 sm:static sm:border-0 sm:bg-transparent sm:py-0"
       >
         <div className="relative min-w-0 flex-1 sm:min-w-48">
           <Search
@@ -185,31 +185,29 @@ export function LinkToolbar({
             /
           </kbd>
         </div>
-        <div
-          role="group"
-          aria-label="View density"
-          className="flex shrink-0 items-center rounded-md border border-line bg-surface"
-        >
-          <button
+        <div role="group" aria-label="View density" className="flex shrink-0 items-center">
+          <Button
             type="button"
-            className={`tap rounded-l-md px-2 text-muted hover:bg-soft hover:text-ink ${density === 'detailed' ? 'bg-soft text-ink' : ''}`}
+            variant="secondary"
+            className={`relative w-10 rounded-r-none px-0 touch:w-11 ${density === 'detailed' ? 'z-1 border-accent/50 bg-accent-soft text-accent' : 'text-muted'}`}
             aria-pressed={density === 'detailed'}
             aria-label="Detailed view"
             title="Detailed view"
             onClick={() => onDensityChange('detailed')}
           >
             <LayoutList size={16} aria-hidden="true" />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className={`tap rounded-r-md border-l border-line px-2 text-muted hover:bg-soft hover:text-ink ${density === 'compact' ? 'bg-soft text-ink' : ''}`}
+            variant="secondary"
+            className={`relative -ml-px w-10 rounded-l-none px-0 touch:w-11 ${density === 'compact' ? 'z-1 border-accent/50 bg-accent-soft text-accent' : 'text-muted'}`}
             aria-pressed={density === 'compact'}
             aria-label="Compact view"
             title="Compact view"
             onClick={() => onDensityChange('compact')}
           >
             <Rows3 size={16} aria-hidden="true" />
-          </button>
+          </Button>
         </div>
         <Button
           variant="secondary"
@@ -221,27 +219,33 @@ export function LinkToolbar({
           <SlidersHorizontal size={16} aria-hidden="true" />
           Filters{filterCount > 0 ? ` · ${filterCount}` : ''}
         </Button>
-        <div className="hidden min-w-0 flex-wrap items-center gap-2 sm:flex">
+        <div className="hidden max-w-full min-w-0 flex-wrap items-center gap-2 sm:flex">
           <label id="desktop-source-label" htmlFor="desktop-source" className="sr-only">
             Source
           </label>
           <Select
             id="desktop-source"
-            className="w-40 max-w-full"
+            className="w-36 max-w-full"
             value={filters.source}
             onChange={(source) => changeFilters({ source })}
             options={sourceOptions}
           />
-          <label id="desktop-sort-label" htmlFor="desktop-sort" className="sr-only">
-            Sort links
-          </label>
-          <Select
-            id="desktop-sort"
-            className="w-32 max-w-full"
-            value={filters.sort}
-            onChange={(sort) => changeFilters({ sort: sort as Sort })}
-            options={sortOptions}
-          />
+          <div className="flex min-w-0 items-center gap-2">
+            <label
+              id="desktop-sort-label"
+              htmlFor="desktop-sort"
+              className="shrink-0 text-xs text-muted"
+            >
+              Sort by:
+            </label>
+            <Select
+              id="desktop-sort"
+              className="w-32 max-w-full"
+              value={filters.sort}
+              onChange={(sort) => changeFilters({ sort: sort as Sort })}
+              options={sortOptions}
+            />
+          </div>
         </div>
       </div>
       <Transition
@@ -292,7 +296,7 @@ export function LinkToolbar({
                   htmlFor="mobile-sort"
                   className="mb-1 block text-xs text-muted"
                 >
-                  Sort links
+                  Sort by:
                 </label>
                 <Select
                   id="mobile-sort"

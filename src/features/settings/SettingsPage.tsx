@@ -9,13 +9,12 @@ import { PasswordRules } from '../auth/PasswordRules'
 import { useToast } from '../../components/ui/Toast'
 
 export function SettingsPage() {
-  const { session, signOut } = useAuth()
+  const { session } = useAuth()
   const [current, setCurrent] = useState('')
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [signingOut, setSigningOut] = useState(false)
   const toast = useToast()
   const profile = useQuery({
     queryKey: ['profile', session?.user.id],
@@ -61,91 +60,80 @@ export function SettingsPage() {
   return (
     <main id="main" className="page">
       <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-      <section className="mt-8 border-t border-line py-6">
-        <h2 className="text-base font-medium">Account</h2>
-        <div className="mt-4">
-          <p className="text-xs text-muted">Username</p>
-          <p className="mt-1 font-medium">
-            {profile.data?.username || (profile.isPending ? 'Loading…' : 'Unavailable')}
-          </p>
-          {profile.isError && (
-            <p role="alert" className="mt-2 text-xs text-danger">
-              Your profile couldn’t load.{' '}
-              <button className="tap underline" onClick={() => void profile.refetch()}>
-                Retry
-              </button>
+      <div className="mt-7 divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface shadow-xs dark:shadow-none">
+        <section aria-labelledby="account-heading" className="p-4 sm:p-6">
+          <h2 id="account-heading" className="text-base font-medium">
+            Account
+          </h2>
+          <div className="mt-4">
+            <p className="text-xs text-muted">Username</p>
+            <p className="mt-1 font-medium">
+              {profile.data?.username || (profile.isPending ? 'Loading…' : 'Unavailable')}
             </p>
-          )}
-        </div>
-      </section>
-      <section className="border-t border-line py-6">
-        <h2 className="text-base font-medium">Change password</h2>
-        <form onSubmit={submit} className="mt-4 max-w-md space-y-4">
-          {error && <InlineError>{error}</InlineError>}
-          <fieldset disabled={busy} className="space-y-4">
-            <Field id="current-password" label="Current password">
-              <Input
-                id="current-password"
-                type="password"
-                autoComplete="current-password"
-                value={current}
-                onChange={(e) => setCurrent(e.target.value)}
-                required
-              />
-            </Field>
-            <Field id="new-password" label="New password">
-              <Input
-                id="new-password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </Field>
-            <PasswordRules password={password} />
-            <Field id="confirm-new-password" label="Confirm new password">
-              <Input
-                id="confirm-new-password"
-                type="password"
-                autoComplete="new-password"
-                value={confirmation}
-                onChange={(e) => setConfirmation(e.target.value)}
-                required
-                aria-invalid={!!confirmation && password !== confirmation}
-              />
-            </Field>
-            {confirmation && password !== confirmation && (
-              <p className="text-xs text-danger">Passwords don’t match yet.</p>
+            {profile.isError && (
+              <p role="alert" className="mt-2 text-xs text-danger">
+                Your profile couldn’t load.{' '}
+                <button className="tap underline" onClick={() => void profile.refetch()}>
+                  Retry
+                </button>
+              </p>
             )}
-          </fieldset>
-          <Button
-            type="submit"
-            disabled={busy || !current || !isStrongPassword(password) || password !== confirmation}
-          >
-            {busy ? 'Updating…' : 'Update password'}
-          </Button>
-        </form>
-      </section>
-      <section className="border-t border-line py-6">
-        <h2 className="text-base font-medium">Session</h2>
-        <Button
-          variant="secondary"
-          disabled={signingOut || busy}
-          className="mt-4"
-          onClick={async () => {
-            setSigningOut(true)
-            try {
-              await signOut()
-            } catch (error) {
-              setError(errorMessage(error))
-              setSigningOut(false)
-            }
-          }}
-        >
-          {signingOut ? 'Signing out…' : 'Sign out'}
-        </Button>
-      </section>
+          </div>
+        </section>
+        <section aria-labelledby="password-heading" className="p-4 sm:p-6">
+          <h2 id="password-heading" className="text-base font-medium">
+            Change password
+          </h2>
+          <form onSubmit={submit} className="mt-4 max-w-md space-y-4">
+            {error && <InlineError>{error}</InlineError>}
+            <fieldset disabled={busy} className="space-y-4">
+              <Field id="current-password" label="Current password">
+                <Input
+                  id="current-password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={current}
+                  onChange={(e) => setCurrent(e.target.value)}
+                  required
+                />
+              </Field>
+              <Field id="new-password" label="New password">
+                <Input
+                  id="new-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </Field>
+              <PasswordRules password={password} />
+              <Field id="confirm-new-password" label="Confirm new password">
+                <Input
+                  id="confirm-new-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmation}
+                  onChange={(e) => setConfirmation(e.target.value)}
+                  required
+                  aria-invalid={!!confirmation && password !== confirmation}
+                />
+              </Field>
+              {confirmation && password !== confirmation && (
+                <p className="text-xs text-danger">Passwords don’t match yet.</p>
+              )}
+            </fieldset>
+            <Button
+              type="submit"
+              disabled={
+                busy || !current || !isStrongPassword(password) || password !== confirmation
+              }
+            >
+              {busy ? 'Updating…' : 'Update password'}
+            </Button>
+          </form>
+        </section>
+      </div>
     </main>
   )
 }

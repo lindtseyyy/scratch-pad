@@ -34,7 +34,7 @@ function TagRow({ tag, onDelete }: { tag: Tag; onDelete: () => void }) {
     }
   }
   return (
-    <div className="border-b border-line py-3">
+    <div className="entry-card rounded-xl border p-3 shadow-xs sm:p-4 dark:shadow-none">
       {editing ? (
         <form onSubmit={submit} className="flex flex-wrap gap-2">
           <label className="sr-only" htmlFor={`rename-${tag.id}`}>
@@ -163,9 +163,9 @@ export function TagsPage() {
             Add tag
           </Button>
         </form>
-        <div>
-          <label id="tag-sort-label" htmlFor="tag-sort" className="sr-only">
-            Sort tags
+        <div className="flex max-w-full items-center gap-2">
+          <label id="tag-sort-label" htmlFor="tag-sort" className="shrink-0 text-xs text-muted">
+            Sort by:
           </label>
           <Select
             id="tag-sort"
@@ -183,7 +183,7 @@ export function TagsPage() {
           <InlineError>{error}</InlineError>
         </div>
       )}
-      <div className="mt-5 border-t border-line">
+      <div className="mt-5 space-y-3">
         {tags.isPending ? (
           <Spinner label="Loading tags…" />
         ) : tags.isError ? (

@@ -153,7 +153,7 @@ export function LinkRow({
     return (
       <article
         {...pressProps}
-        className="card-interactive group flex min-h-12 items-center gap-2.5 rounded-lg border border-line/80 bg-surface py-1.5 pl-3 pr-1.5 hover:border-accent/50"
+        className="entry-card card-interactive group flex min-h-12 items-center gap-2.5 rounded-lg border py-1.5 pl-3 pr-1.5 hover:border-accent/50"
       >
         <Favicon url={link.url} domain={domain} size={18} />
         <a
@@ -191,7 +191,7 @@ export function LinkRow({
   return (
     <article
       {...pressProps}
-      className="card-interactive group relative rounded-xl border border-line/80 bg-surface p-3 shadow-xs hover:border-accent/50 sm:p-4 dark:shadow-none"
+      className="entry-card card-interactive group relative rounded-xl border p-3 shadow-xs hover:border-accent/50 sm:p-4 dark:shadow-none"
     >
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">

@@ -15,6 +15,17 @@
   --accent-hover: #2b5039;
   --accent-soft: #e8eee6;
   --danger: #a23434;
+  --save-field-background: #e0eafa;
+  --save-field-border: #6d8bb8;
+  --save-field-focus: #386495;
+  --save-field-muted: #556987;
+  --entry-sage: #e1e9dc;
+  --entry-blue: #dde6ee;
+  --entry-sand: #eee2d2;
+  --entry-lilac: #e7dfec;
+  --entry-teal: #dce9e5;
+  --entry-rose: #eedfde;
+  --entry-muted: #56614f;
 }
 .dark {
   --canvas: #181b18;
@@ -28,6 +39,17 @@
   --accent-hover: #c1dac3;
   --accent-soft: #293c2d;
   --danger: #f2a2a2;
+  --save-field-background: #29394d;
+  --save-field-border: #597cad;
+  --save-field-focus: #acccf0;
+  --save-field-muted: #bacde6;
+  --entry-sage: #2d392d;
+  --entry-blue: #2d3742;
+  --entry-sand: #40372b;
+  --entry-lilac: #393141;
+  --entry-teal: #2a3b36;
+  --entry-rose: #402f31;
+  --entry-muted: #b7c3ad;
 }
 @theme inline {
   --color-canvas: var(--canvas);
@@ -92,6 +114,35 @@
   .input {
     @apply block min-h-10 w-full rounded-md border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted disabled:opacity-60 touch:min-h-11 fine:text-sm;
   }
+  .save-link-input {
+    --muted: var(--save-field-muted);
+    border-color: var(--save-field-border);
+    background-color: var(--save-field-background);
+  }
+  .save-link-input:focus-visible {
+    outline-color: var(--save-field-focus);
+  }
+  .entry-card {
+    --entry-background: var(--entry-sage);
+    --muted: var(--entry-muted);
+    border-color: color-mix(in srgb, var(--entry-background) 75%, var(--ink));
+    background-color: var(--entry-background);
+  }
+  .entry-card:nth-child(6n + 2) {
+    --entry-background: var(--entry-blue);
+  }
+  .entry-card:nth-child(6n + 3) {
+    --entry-background: var(--entry-sand);
+  }
+  .entry-card:nth-child(6n + 4) {
+    --entry-background: var(--entry-lilac);
+  }
+  .entry-card:nth-child(6n + 5) {
+    --entry-background: var(--entry-teal);
+  }
+  .entry-card:nth-child(6n + 6) {
+    --entry-background: var(--entry-rose);
+  }
   .tag {
     @apply inline-flex max-w-full items-center gap-1 rounded-sm bg-soft px-2 py-0.5 text-xs text-secondary touch:py-1 touch:text-sm;
   }
@@ -122,7 +173,7 @@
   }
   .card-interactive:active {
     transform: scale(0.995);
-    background-color: color-mix(in srgb, var(--soft) 40%, var(--surface));
+    background-color: color-mix(in srgb, var(--soft) 40%, var(--entry-background, var(--surface)));
   }
   .modal-backdrop {
     transition: opacity 200ms ease-out;
