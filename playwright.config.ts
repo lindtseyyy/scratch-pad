@@ -25,20 +25,24 @@ export default defineConfig({
     channel: 'chrome',
   },
   projects: [
-    { name: 'desktop', testIgnore: '**/pwa.spec.ts', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'desktop',
+      testIgnore: ['**/pwa.spec.ts', '**/extension/**'],
+      use: { ...devices['Desktop Chrome'] },
+    },
     {
       name: 'mobile',
-      testIgnore: '**/pwa.spec.ts',
+      testIgnore: ['**/pwa.spec.ts', '**/extension/**'],
       use: { ...devices['Pixel 7'], defaultBrowserType: 'chromium' },
     },
     {
       name: 'small',
-      testIgnore: '**/pwa.spec.ts',
+      testIgnore: ['**/pwa.spec.ts', '**/extension/**'],
       use: { viewport: { width: 320, height: 568 }, hasTouch: true, isMobile: true },
     },
     {
       name: 'tablet',
-      testIgnore: '**/pwa.spec.ts',
+      testIgnore: ['**/pwa.spec.ts', '**/extension/**'],
       use: { ...devices['iPad Mini'], defaultBrowserType: 'chromium' },
     },
     {

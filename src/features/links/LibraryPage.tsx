@@ -189,12 +189,12 @@ export function LibraryPage() {
         <div className="min-w-0 max-sm:border-0 max-sm:bg-transparent max-sm:p-0 sm:rounded-lg sm:border sm:border-line sm:bg-surface sm:p-6">
           <div className="mb-3 flex items-start justify-between gap-3 sm:mb-6">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Library</h1>
+              <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Library</h1>
               <p className="mt-1 hidden text-sm text-muted sm:block">
                 Good finds. All in one place.
               </p>
             </div>
-            <div className="pt-1.5 text-xs text-muted">
+            <div className="pt-1.5 text-xs max-sm:text-[11px] text-muted">
               {total.data !== undefined &&
                 `${total.data} saved ${total.data === 1 ? 'link' : 'links'}`}
             </div>
@@ -206,7 +206,7 @@ export function LibraryPage() {
             <Input
               id="quick-url"
               ref={quickRef}
-              className="save-link-input min-w-0 flex-1"
+              className="min-w-0 flex-1 max-sm:text-sm"
               value={quickUrl}
               onChange={(e) => setQuickUrl(e.target.value)}
               placeholder="Paste a link to save…"
@@ -215,7 +215,7 @@ export function LibraryPage() {
               autoCapitalize="none"
               spellCheck={false}
             />
-            <Button type="submit" disabled={!quickUrl.trim()}>
+            <Button type="submit" disabled={!quickUrl.trim()} className="max-sm:text-xs">
               <Plus size={16} aria-hidden="true" />
               Save
             </Button>

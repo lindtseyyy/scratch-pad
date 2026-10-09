@@ -61,7 +61,7 @@ function ActiveFilterChips({
         <div className="min-w-0 overflow-hidden">
           <button
             type="button"
-            className="tag gap-2 whitespace-nowrap"
+            className="tag gap-2 whitespace-nowrap max-sm:text-xs max-sm:py-0.5"
             aria-label={chip.removeLabel}
             onClick={() => {
               if (chip.key.startsWith('tag:'))
@@ -172,7 +172,7 @@ export function LinkToolbar({
             ref={searchRef}
             aria-label="Search links"
             placeholder="Search links…"
-            className="pl-9 fine:pr-9"
+            className="pl-9 fine:pr-9 max-sm:text-sm"
             value={draft.urlQuery === filters.query ? draft.query : filters.query}
             onChange={(event) => {
               const query = event.target.value
@@ -211,7 +211,7 @@ export function LinkToolbar({
         </div>
         <Button
           variant="secondary"
-          className="shrink-0 gap-1.5 sm:hidden"
+          className="shrink-0 gap-1.5 max-sm:text-xs sm:hidden"
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
           aria-controls="library-filters"
@@ -258,7 +258,7 @@ export function LinkToolbar({
         <ActiveFilterChips filters={filters} onChange={changeFilters} />
         <Button
           variant="ghost"
-          className="shrink-0 px-2 text-xs"
+          className="shrink-0 px-2 text-xs max-sm:text-[11px]"
           aria-label="Clear filters"
           onClick={clearFilters}
         >
@@ -279,12 +279,13 @@ export function LinkToolbar({
                 <label
                   id="mobile-source-label"
                   htmlFor="mobile-source"
-                  className="mb-1 block text-xs text-muted"
+                  className="mb-1 block text-xs max-sm:text-[11px] text-muted"
                 >
                   Source
                 </label>
                 <Select
                   id="mobile-source"
+                  className="max-sm:text-xs"
                   value={filters.source}
                   onChange={(source) => changeFilters({ source })}
                   options={sourceOptions}
@@ -294,12 +295,13 @@ export function LinkToolbar({
                 <label
                   id="mobile-sort-label"
                   htmlFor="mobile-sort"
-                  className="mb-1 block text-xs text-muted"
+                  className="mb-1 block text-xs max-sm:text-[11px] text-muted"
                 >
                   Sort by:
                 </label>
                 <Select
                   id="mobile-sort"
+                  className="max-sm:text-xs"
                   value={filters.sort}
                   onChange={(sort) => changeFilters({ sort: sort as Sort })}
                   options={sortOptions}
@@ -323,7 +325,7 @@ export function LinkToolbar({
                 <Button
                   variant="ghost"
                   onClick={clearFilters}
-                  className="shrink-0 whitespace-nowrap px-1 text-xs"
+                  className="shrink-0 whitespace-nowrap px-1 text-xs max-sm:text-[11px]"
                 >
                   Clear filters
                 </Button>

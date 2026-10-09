@@ -1,5 +1,14 @@
 import { useState, type FormEvent } from 'react'
-import { Modal, Button, Field, Input, Textarea, InlineError } from '../../components/ui/primitives'
+import { LoaderCircle } from 'lucide-react'
+import {
+  Modal,
+  Button,
+  Field,
+  Input,
+  Textarea,
+  InlineError,
+  Spinner,
+} from '../../components/ui/primitives'
 import { TagInput } from '../tags/TagInput'
 import { useTags } from '../tags/hooks'
 import { useLinkByUrl, useSaveLink } from './hooks'
@@ -84,7 +93,16 @@ export function LinkFormDialog({
           disabled={!online || save.isPending || !url.trim()}
           aria-describedby={!online ? 'link-offline-hint' : undefined}
         >
-          {save.isPending ? 'Saving…' : link ? 'Save changes' : 'Save link'}
+          {save.isPending ? (
+            <span className="flex items-center gap-1.5">
+              <LoaderCircle size={15} className="animate-spin" aria-hidden="true" />
+              Saving…
+            </span>
+          ) : link ? (
+            'Save changes'
+          ) : (
+            'Save link'
+          )}
         </Button>
       }
       title={link ? 'Edit link' : 'Save for later'}
@@ -95,6 +113,15 @@ export function LinkFormDialog({
       }
       onClose={cancel}
     >
+      {save.isPending && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface/85 backdrop-blur-xs"
+        >
+          <Spinner label={link ? 'Saving changes…' : 'Saving link…'} />
+        </div>
+      )}
       <form
         id="link-form"
         onSubmit={submit}
@@ -224,7 +251,16 @@ export function LinkFormDialog({
               disabled={!online || save.isPending || !url.trim()}
               aria-describedby={!online ? 'link-offline-hint' : undefined}
             >
-              {save.isPending ? 'Saving…' : link ? 'Save changes' : 'Save link'}
+              {save.isPending ? (
+                <span className="flex items-center gap-1.5">
+                  <LoaderCircle size={15} className="animate-spin" aria-hidden="true" />
+                  Saving…
+                </span>
+              ) : link ? (
+                'Save changes'
+              ) : (
+                'Save link'
+              )}
             </Button>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { getSupabase } from '../../lib/supabase'
 import { isStrongPassword } from '../../lib/password-rules'
 import { errorMessage } from '../../lib/errors'
-import { Button, Field, InlineError, Input } from '../../components/ui/primitives'
+import { Button, Field, InlineError, PasswordInput } from '../../components/ui/primitives'
 import { PasswordRules } from '../auth/PasswordRules'
 import { useToast } from '../../components/ui/Toast'
 
@@ -59,15 +59,15 @@ export function SettingsPage() {
   }
   return (
     <main id="main" className="page">
-      <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+      <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Settings</h1>
       <div className="mt-7 divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface shadow-xs dark:shadow-none">
         <section aria-labelledby="account-heading" className="p-4 sm:p-6">
-          <h2 id="account-heading" className="text-base font-medium">
+          <h2 id="account-heading" className="text-sm font-medium sm:text-base">
             Account
           </h2>
           <div className="mt-4">
-            <p className="text-xs text-muted">Username</p>
-            <p className="mt-1 font-medium">
+            <p className="text-xs max-sm:text-[11px] text-muted">Username</p>
+            <p className="mt-1 font-medium max-sm:text-sm">
               {profile.data?.username || (profile.isPending ? 'Loading…' : 'Unavailable')}
             </p>
             {profile.isError && (
@@ -81,50 +81,51 @@ export function SettingsPage() {
           </div>
         </section>
         <section aria-labelledby="password-heading" className="p-4 sm:p-6">
-          <h2 id="password-heading" className="text-base font-medium">
+          <h2 id="password-heading" className="text-sm font-medium sm:text-base">
             Change password
           </h2>
           <form onSubmit={submit} className="mt-4 max-w-md space-y-4">
             {error && <InlineError>{error}</InlineError>}
             <fieldset disabled={busy} className="space-y-4">
               <Field id="current-password" label="Current password">
-                <Input
+                <PasswordInput
                   id="current-password"
-                  type="password"
                   autoComplete="current-password"
                   value={current}
                   onChange={(e) => setCurrent(e.target.value)}
+                  className="max-sm:text-sm"
                   required
                 />
               </Field>
               <Field id="new-password" label="New password">
-                <Input
+                <PasswordInput
                   id="new-password"
-                  type="password"
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="max-sm:text-sm"
                   required
                 />
               </Field>
               <PasswordRules password={password} />
               <Field id="confirm-new-password" label="Confirm new password">
-                <Input
+                <PasswordInput
                   id="confirm-new-password"
-                  type="password"
                   autoComplete="new-password"
                   value={confirmation}
                   onChange={(e) => setConfirmation(e.target.value)}
+                  className="max-sm:text-sm"
                   required
                   aria-invalid={!!confirmation && password !== confirmation}
                 />
               </Field>
               {confirmation && password !== confirmation && (
-                <p className="text-xs text-danger">Passwords don’t match yet.</p>
+                <p className="text-xs max-sm:text-[11px] text-danger">Passwords don’t match yet.</p>
               )}
             </fieldset>
             <Button
               type="submit"
+              className="max-sm:text-xs"
               disabled={
                 busy || !current || !isStrongPassword(password) || password !== confirmation
               }

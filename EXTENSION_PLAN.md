@@ -4,7 +4,7 @@ A plan for a small personal browser extension that saves the page you're on, or 
 
 [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) lists a bookmarklet as the first "Later" item. This plan covers the same need with fewer clicks and adds a bookmarklet as a fallback (§7). It is based on the current code in `src/` and the share flow from [PWA_PLAN.md](PWA_PLAN.md).
 
-**Implementation status:** Phases 1–3 implemented October 4, 2026, including extension assets, popup closing, automated tests, install documentation, and the bookmarklet. Native browser verification (§8.2) and personal Firefox signing/installation remain pending. The optional fallback (§5.3) is deferred unless native testing shows it is needed; the direct-save form (§9) is outside this implementation.
+**Implementation status:** Phases 1–3 implemented October 4, 2026, including extension assets, popup closing, automated tests, install documentation, and the bookmarklet. October 7 follow-up adds repeatable menu installation, defensive handling of unavailable tab metadata, a minimum Chrome version, loaded Chromium extension tests, and [step-by-step installation instructions](EXTENSION_INSTALL.md). Physical browser UI verification (§8.2) and personal Firefox signing/installation remain pending. The optional fallback (§5.3) is deferred unless native testing shows it is needed; the direct-save form (§9) is outside this implementation.
 
 Implementation adjustments: the empty-add fallback includes `popup=1`; Vitest's explicit include list now picks up extension tests; `LinkFormDialog` distinguishes successful saves from cancellation; and Firefox's minimum is 140 with data declarations required by its current signing process. Only `contextMenus` and `activeTab` API permissions are requested.
 
@@ -280,7 +280,9 @@ Verified October 4, 2026: 75 unit tests and 25 browser scenarios passed (24 in t
   - "Edit existing" on a duplicate keeps the flag.
 - `npm run lint`, `npm run format:check`, `npm run build`.
 
-The browser extension isn't loaded in automated tests. Branded Google Chrome 137+ ignores `--load-extension`, and the suite uses installed Chrome. Testing it would need Playwright's bundled Chromium as a separate project, which isn't worth it for about 30 lines of event wiring.
+`npm run test:extension` now uses Playwright's bundled Chromium in a separate configuration to load the extension in an isolated profile. It invokes the actual registered handlers through a bridge added only to a disposable test copy. Browser popup creation, app navigation, login/session reuse, saving, duplicate editing, cancellation, and closing use the real extension and browser APIs. The hosted URL is unchanged. Native toolbar, menu, and shortcut gestures still require the manual checks below. `extension/background.test.js` covers menu replacement on updates, immediate event registration, and page/link/selection/library routing.
+
+Verified October 7, 2026: 108 unit tests and both loaded Chromium extension scenarios passed. Firefox extension lint reports zero errors and the same two warnings described above.
 
 ### 8.2 Manual (Chrome and Firefox)
 

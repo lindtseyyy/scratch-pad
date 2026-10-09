@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Scratch-Pad",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "minimum_chrome_version": "121",
   "description": "Save the current page or a link to Scratch-Pad.",
   "icons": { "64": "icons/icon-64.png", "192": "icons/icon-192.png" },
   "action": { "default_title": "Save to Scratch-Pad" },

@@ -2,7 +2,10 @@ import { Check, Minus } from 'lucide-react'
 import { passwordRules } from '../../lib/password-rules'
 export function PasswordRules({ password }: { password: string }) {
   return (
-    <ul className="grid gap-1.5 text-xs sm:grid-cols-2" aria-label="Password requirements">
+    <ul
+      className="grid gap-1.5 text-xs max-sm:text-[11px] sm:grid-cols-2"
+      aria-label="Password requirements"
+    >
       {passwordRules.map((rule) => {
         const passes = rule.test(password)
         const Icon = passes ? Check : Minus

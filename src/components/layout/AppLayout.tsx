@@ -98,7 +98,7 @@ export function AppLayout() {
                 key={path}
                 to={path}
                 className={({ isActive }) =>
-                  `nav-link inline-flex items-center rounded py-1 font-medium touch:min-h-11 touch:min-w-11 ${isActive ? 'text-accent' : 'text-muted hover:text-ink'}`
+                  `nav-link inline-flex items-center justify-center text-center rounded py-1 font-medium touch:min-h-11 touch:min-w-11 ${isActive ? 'text-accent' : 'text-muted hover:text-ink'}`
                 }
               >
                 {label}

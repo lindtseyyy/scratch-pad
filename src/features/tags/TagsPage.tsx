@@ -42,7 +42,7 @@ function TagRow({ tag, onDelete }: { tag: Tag; onDelete: () => void }) {
           </label>
           <Input
             id={`rename-${tag.id}`}
-            className="min-w-0 flex-1"
+            className="min-w-0 flex-1 max-sm:text-sm"
             value={name}
             autoFocus
             onChange={(e) => setName(e.target.value)}
@@ -50,12 +50,13 @@ function TagRow({ tag, onDelete }: { tag: Tag; onDelete: () => void }) {
             required
             disabled={rename.isPending}
           />
-          <Button type="submit" disabled={rename.isPending}>
+          <Button type="submit" disabled={rename.isPending} className="max-sm:text-xs">
             Save
           </Button>
           <Button
             type="button"
             variant="secondary"
+            className="max-sm:text-xs"
             disabled={rename.isPending}
             onClick={() => {
               setEditing(false)
@@ -69,10 +70,13 @@ function TagRow({ tag, onDelete }: { tag: Tag; onDelete: () => void }) {
       ) : (
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <Link className="tag break-all hover:text-accent" to={tagLibraryUrl(tag.name)}>
+            <Link
+              className="tag break-all hover:text-accent max-sm:text-xs max-sm:py-0.5"
+              to={tagLibraryUrl(tag.name)}
+            >
               {tag.name}
             </Link>
-            <span className="shrink-0 text-xs text-muted">
+            <span className="shrink-0 text-xs max-sm:text-[11px] text-muted">
               {tag.link_count} {tag.link_count === 1 ? 'link' : 'links'}
             </span>
           </div>
@@ -125,8 +129,10 @@ export function TagsPage() {
   )
   return (
     <main id="main" className="page">
-      <h1 className="text-2xl font-semibold tracking-tight">Tags</h1>
-      <p className="mt-1 text-sm text-muted">A little order for everything you collect.</p>
+      <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Tags</h1>
+      <p className="mt-1 text-xs text-muted sm:text-sm">
+        A little order for everything you collect.
+      </p>
       <div className="mt-7 flex flex-col items-end justify-between gap-4 sm:flex-row sm:flex-wrap">
         <form
           onSubmit={async (event) => {
@@ -152,23 +158,28 @@ export function TagsPage() {
             onChange={(e) => setName(e.target.value)}
             maxLength={32}
             disabled={create.isPending}
-            className="min-w-0 flex-1 sm:max-w-xs"
+            className="min-w-0 flex-1 max-sm:text-sm sm:max-w-xs"
           />
           <Button
             type="submit"
             variant="secondary"
-            className="shrink-0"
+            className="shrink-0 max-sm:text-xs"
             disabled={!name.trim() || create.isPending}
           >
             Add tag
           </Button>
         </form>
         <div className="flex max-w-full items-center gap-2">
-          <label id="tag-sort-label" htmlFor="tag-sort" className="shrink-0 text-xs text-muted">
+          <label
+            id="tag-sort-label"
+            htmlFor="tag-sort"
+            className="shrink-0 text-xs max-sm:text-[11px] text-muted"
+          >
             Sort by:
           </label>
           <Select
             id="tag-sort"
+            className="max-sm:text-xs"
             value={sort}
             onChange={setSort}
             options={[

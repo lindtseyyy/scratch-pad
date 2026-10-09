@@ -7,7 +7,14 @@ import { isValidUsername, usernameToEmail } from '../../lib/auth-email'
 import { isStrongPassword } from '../../lib/password-rules'
 import { errorMessage } from '../../lib/errors'
 import { authDestination } from '../../lib/auth-redirect'
-import { Button, Field, InlineError, Input, Spinner } from '../../components/ui/primitives'
+import {
+  Button,
+  Field,
+  InlineError,
+  Input,
+  PasswordInput,
+  Spinner,
+} from '../../components/ui/primitives'
 import { PasswordRules } from './PasswordRules'
 import { AppFooter } from '../../components/layout/AppFooter'
 
@@ -95,9 +102,8 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
               />
             </Field>
             <Field id="password" label="Password">
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete={signup ? 'new-password' : 'current-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -108,9 +114,8 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
               <>
                 <PasswordRules password={password} />
                 <Field id="confirmation" label="Confirm password">
-                  <Input
+                  <PasswordInput
                     id="confirmation"
-                    type="password"
                     autoComplete="new-password"
                     value={confirmation}
                     onChange={(e) => setConfirmation(e.target.value)}

@@ -10,8 +10,8 @@ import {
   ListboxOptions,
   Transition,
 } from '@headlessui/react'
-import { Check, ChevronDown, X, LoaderCircle } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { Check, ChevronDown, Eye, EyeOff, X, LoaderCircle } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -34,6 +34,29 @@ export function Input({
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
   return <input className={`input ${className}`} {...props} />
+}
+export function PasswordInput({
+  className = '',
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="relative flex items-center">
+      <input
+        {...props}
+        type={show ? 'text' : 'password'}
+        className={`input pr-10 touch:pr-11 ${className}`}
+      />
+      <button
+        type="button"
+        onClick={() => setShow((prev) => !prev)}
+        className="tap absolute right-0 flex h-full w-10 items-center justify-center rounded-r-md text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-accent touch:w-11"
+        aria-label={show ? 'Hide password' : 'Show password'}
+      >
+        {show ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+      </button>
+    </div>
+  )
 }
 export function Textarea({
   className = '',
@@ -119,12 +142,12 @@ export function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-sm font-medium">
+      <label htmlFor={id} className="block text-sm font-medium max-sm:text-xs">
         {label}
       </label>
       {children}
       {hint && (
-        <p id={`${id}-hint`} className="text-xs text-muted">
+        <p id={`${id}-hint`} className="text-xs text-muted max-sm:text-[11px]">
           {hint}
         </p>
       )}
@@ -195,7 +218,7 @@ export function Modal({
               inert={!open}
               transition
               data-modal-variant={variant}
-              className={`modal-panel flex w-full flex-col border border-line bg-surface sm:max-h-[calc(100dvh-3rem)] sm:max-w-lg sm:rounded-lg ${variant === 'page' ? 'max-h-dvh h-dvh sm:h-auto' : 'max-h-[85dvh] rounded-t-2xl'}`}
+              className={`modal-panel relative flex w-full flex-col border border-line bg-surface sm:max-h-[calc(100dvh-3rem)] sm:max-w-lg sm:rounded-lg ${variant === 'page' ? 'max-h-dvh h-dvh sm:h-auto' : 'max-h-[85dvh] rounded-t-2xl'}`}
             >
               {variant === 'sheet' && (
                 <div

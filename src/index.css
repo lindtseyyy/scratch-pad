@@ -15,10 +15,6 @@
   --accent-hover: #2b5039;
   --accent-soft: #e8eee6;
   --danger: #a23434;
-  --save-field-background: #e0eafa;
-  --save-field-border: #6d8bb8;
-  --save-field-focus: #386495;
-  --save-field-muted: #556987;
   --entry-sage: #e1e9dc;
   --entry-blue: #dde6ee;
   --entry-sand: #eee2d2;
@@ -39,10 +35,6 @@
   --accent-hover: #c1dac3;
   --accent-soft: #293c2d;
   --danger: #f2a2a2;
-  --save-field-background: #29394d;
-  --save-field-border: #597cad;
-  --save-field-focus: #acccf0;
-  --save-field-muted: #bacde6;
   --entry-sage: #2d392d;
   --entry-blue: #2d3742;
   --entry-sand: #40372b;
@@ -112,15 +104,7 @@
     @apply border-line bg-surface text-danger hover:bg-soft;
   }
   .input {
-    @apply block min-h-10 w-full rounded-md border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted disabled:opacity-60 touch:min-h-11 fine:text-sm;
-  }
-  .save-link-input {
-    --muted: var(--save-field-muted);
-    border-color: var(--save-field-border);
-    background-color: var(--save-field-background);
-  }
-  .save-link-input:focus-visible {
-    outline-color: var(--save-field-focus);
+    @apply block min-h-10 w-full rounded-md border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted disabled:opacity-60 touch:min-h-11 fine:text-sm max-sm:text-sm;
   }
   .entry-card {
     --entry-background: var(--entry-sage);
@@ -144,7 +128,7 @@
     --entry-background: var(--entry-rose);
   }
   .tag {
-    @apply inline-flex max-w-full items-center gap-1 rounded-sm bg-soft px-2 py-0.5 text-xs text-secondary touch:py-1 touch:text-sm;
+    @apply inline-flex max-w-full items-center gap-1 rounded-sm bg-soft px-2 py-0.5 text-xs text-secondary touch:py-1 touch:text-sm max-sm:text-xs max-sm:touch:py-0.5;
   }
   button.tag,
   a.tag {
@@ -295,7 +279,7 @@
   }
   .menu-item,
   .dropdown-option {
-    @apply flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm transition-colors duration-100 data-focus:bg-soft disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:opacity-50 touch:min-h-11 touch:py-3 touch:text-base;
+    @apply flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm transition-colors duration-100 data-focus:bg-soft disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:opacity-50 touch:min-h-11 touch:py-3 touch:text-base max-sm:text-sm max-sm:touch:py-2;
   }
   .dropdown-option {
     @apply cursor-pointer data-focus:bg-accent-soft data-focus:text-accent data-selected:bg-accent-soft data-selected:font-medium data-selected:text-accent;
@@ -305,6 +289,10 @@
   }
   .nav-link {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     transition: color 160ms ease-out;
   }
   .nav-link::after {
@@ -317,6 +305,7 @@
     content: '';
     opacity: 0;
     transform: scaleX(0.75);
+    transform-origin: center;
     transition:
       opacity 160ms ease-out,
       transform 160ms ease-out;
