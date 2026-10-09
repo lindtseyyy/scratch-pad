@@ -89,7 +89,7 @@ export function LinkRow({
     <div className="shrink-0 sm:hidden">
       <button
         type="button"
-        className="rounded p-2.5 text-muted hover:bg-soft hover:text-ink touch:min-h-11 touch:min-w-11 touch:p-3"
+        className="rounded p-1 text-muted hover:bg-soft hover:text-ink touch:min-h-11 touch:min-w-11"
         aria-label={`Actions for ${link.title}`}
         onClick={() => setSheetOpen(true)}
       >
@@ -101,7 +101,7 @@ export function LinkRow({
     <div className="hidden shrink-0 sm:block">
       <Menu>
         <MenuButton
-          className="rounded p-2.5 text-muted hover:bg-soft hover:text-ink touch:min-h-11 touch:min-w-11"
+          className="rounded p-1 text-muted hover:bg-soft hover:text-ink touch:min-h-11 touch:min-w-11"
           aria-label={`Actions for ${link.title}`}
         >
           <MoreHorizontal size={18} aria-hidden="true" />
@@ -193,112 +193,112 @@ export function LinkRow({
       {...pressProps}
       className="entry-card card-interactive group relative rounded-xl border p-3 shadow-xs hover:border-accent/50 sm:p-4 dark:shadow-none"
     >
-      <div className="flex items-start gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs leading-5">
-            <Favicon url={link.url} domain={domain} size={16} />
-            <span className="max-w-32 truncate font-medium text-secondary" title={link.url}>
-              {domain}
-            </span>
-            {link.source && (
-              <>
-                <span aria-hidden="true" className="shrink-0 text-muted">
-                  ·
-                </span>
-                <span className="max-w-28 truncate text-muted">{link.source}</span>
-              </>
-            )}
-            <span aria-hidden="true" className="shrink-0 text-muted">
-              ·
-            </span>
-            <time
-              className="shrink-0 whitespace-nowrap text-muted"
-              dateTime={link.created_at}
-              title={fullDate}
-            >
-              {relative}
-            </time>
-          </div>
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`External link: ${link.title}, from ${domain}, saved ${relative}, opens in a new tab`}
-            title={link.title}
-            className="mt-1 block max-w-full text-[15px] font-semibold leading-snug hover:text-accent hover:underline touch:min-h-11"
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs leading-5">
+          <Favicon url={link.url} domain={domain} size={16} />
+          <span className="max-w-32 truncate font-medium text-secondary" title={link.url}>
+            {domain}
+          </span>
+          {link.source && (
+            <>
+              <span aria-hidden="true" className="shrink-0 text-muted">
+                ·
+              </span>
+              <span className="max-w-28 truncate text-muted">{link.source}</span>
+            </>
+          )}
+          <span aria-hidden="true" className="shrink-0 text-muted">
+            ·
+          </span>
+          <time
+            className="shrink-0 whitespace-nowrap text-muted"
+            dateTime={link.created_at}
+            title={fullDate}
           >
-            <span className="line-clamp-2 [overflow-wrap:anywhere]">{link.title}</span>
-            <ExternalLink
+            {relative}
+          </time>
+        </div>
+        <div className="-mr-1 -my-1 flex shrink-0 items-center">
+          {sheetTrigger}
+          {desktopMenu}
+        </div>
+      </div>
+      <a
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`External link: ${link.title}, from ${domain}, saved ${relative}, opens in a new tab`}
+        title={link.title}
+        className="mt-1 block max-w-full text-[15px] font-semibold leading-snug hover:text-accent hover:underline touch:min-h-11"
+      >
+        <span className="line-clamp-2 [overflow-wrap:anywhere]">{link.title}</span>
+        <ExternalLink
+          size={12}
+          className="ml-1.5 inline-block shrink-0 align-baseline text-muted"
+          aria-hidden="true"
+        />
+      </a>
+      {link.description && (
+        <div className="mt-2 rounded-md border-l-2 border-accent/60 bg-soft/50 px-2.5 py-1.5 text-xs leading-relaxed text-secondary">
+          <p className="line-clamp-2 whitespace-pre-line [overflow-wrap:anywhere]">
+            <StickyNote
               size={12}
-              className="ml-1.5 inline-block shrink-0 align-baseline text-muted"
+              className="mr-1 inline-block shrink-0 align-[-1px] text-muted"
               aria-hidden="true"
             />
-          </a>
-          {link.description && (
-            <div className="mt-2 rounded-md border-l-2 border-accent/60 bg-soft/50 px-2.5 py-1.5 text-xs leading-relaxed text-secondary">
-              <p className="line-clamp-2 whitespace-pre-line [overflow-wrap:anywhere]">
-                <StickyNote
-                  size={12}
-                  className="mr-1 inline-block shrink-0 align-[-1px] text-muted"
-                  aria-hidden="true"
-                />
-                {link.description}
-              </p>
-              {noteExpandable && (
-                <button
-                  type="button"
-                  className="mt-1 inline-flex items-center gap-1 font-medium text-accent hover:underline touch:min-h-11 touch:min-w-11"
-                  aria-label={`View full note for ${link.title}`}
-                  onClick={() => setNoteModalOpen(true)}
-                >
-                  [more]
-                </button>
-              )}
-            </div>
-          )}
-          {sortedTags.length > 0 && (
-            <div
-              data-tag-rail
-              className="no-scrollbar -mx-1 mt-2.5 flex items-center gap-1.5 overflow-x-auto px-1 pb-1"
-            >
-              {sortedTags.map((tag) => (
-                <button
-                  key={tag.id}
-                  data-row-tag
-                  type="button"
-                  className="tag h-6 shrink-0 rounded-full bg-soft px-2.5 py-0.5 text-xs text-secondary hover:bg-accent-soft hover:text-accent sm:h-5"
-                  onClick={() => onTag(tag.name)}
-                  aria-label={`Filter by ${tag.name}`}
-                  title={tag.name}
-                >
-                  <span className="max-w-28 truncate">{tag.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="mt-2.5 flex items-center gap-2 border-t border-line/60 pt-2 sm:hidden">
+            {link.description}
+          </p>
+          {noteExpandable && (
             <button
               type="button"
-              className={`tap min-h-10 flex-1 gap-1.5 rounded-md bg-canvas/30 px-2 text-xs font-medium hover:bg-soft hover:text-ink active:bg-soft touch:min-h-11 ${copied ? 'text-accent' : 'text-secondary'}`}
-              onClick={() => void copy()}
-              aria-label={`Copy link address for ${link.title}`}
+              className="mt-1 inline-flex items-center gap-1 font-medium text-accent hover:underline touch:min-h-11 touch:min-w-11"
+              aria-label={`View full note for ${link.title}`}
+              onClick={() => setNoteModalOpen(true)}
             >
-              <CopyFeedbackIcon copied={copied} size={14} />
-              Copy Link
+              [more]
             </button>
-            <button
-              type="button"
-              className="tap min-h-10 flex-1 gap-1.5 rounded-md bg-canvas/30 px-2 text-xs font-medium text-secondary hover:bg-soft hover:text-ink active:bg-soft touch:min-h-11"
-              onClick={() => void share()}
-              aria-label={`Share ${link.title}`}
-            >
-              <Share2 size={14} aria-hidden="true" />
-              Share
-            </button>
-          </div>
+          )}
         </div>
-        {sheetTrigger}
-        {desktopMenu}
+      )}
+      {sortedTags.length > 0 && (
+        <div
+          data-tag-rail
+          className="no-scrollbar -mx-1 mt-2.5 flex items-center gap-1.5 overflow-x-auto px-1 pb-1"
+        >
+          {sortedTags.map((tag) => (
+            <button
+              key={tag.id}
+              data-row-tag
+              type="button"
+              className="tag h-6 shrink-0 rounded-full bg-soft px-2.5 py-0.5 text-xs text-secondary hover:bg-accent-soft hover:text-accent sm:h-5"
+              onClick={() => onTag(tag.name)}
+              aria-label={`Filter by ${tag.name}`}
+              title={tag.name}
+            >
+              <span className="max-w-28 truncate">{tag.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="mt-2.5 flex items-center gap-2 border-t border-line/60 pt-2 sm:hidden">
+        <button
+          type="button"
+          className={`tap min-h-10 flex-1 gap-1.5 rounded-md bg-canvas/30 px-2 text-xs font-medium hover:bg-soft hover:text-ink active:bg-soft touch:min-h-11 ${copied ? 'text-accent' : 'text-secondary'}`}
+          onClick={() => void copy()}
+          aria-label={`Copy link address for ${link.title}`}
+        >
+          <CopyFeedbackIcon copied={copied} size={14} />
+          Copy Link
+        </button>
+        <button
+          type="button"
+          className="tap min-h-10 flex-1 gap-1.5 rounded-md bg-canvas/30 px-2 text-xs font-medium text-secondary hover:bg-soft hover:text-ink active:bg-soft touch:min-h-11"
+          onClick={() => void share()}
+          aria-label={`Share ${link.title}`}
+        >
+          <Share2 size={14} aria-hidden="true" />
+          Share
+        </button>
       </div>
       {sheet}
       {noteModalOpen && (
