@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { Bookmark, ChevronDown, LogOut, Monitor, Moon, Sun, UserRound } from 'lucide-react'
+import { ChevronDown, LogOut, Monitor, Moon, Sun, UserRound } from 'lucide-react'
 import { Suspense, useState } from 'react'
 import { useAuth } from '../../features/auth/AuthProvider'
 import { useTheme } from '../../hooks/useTheme'
@@ -35,7 +35,7 @@ export function AppLayout() {
             to="/"
             className="flex items-center gap-2 text-base font-semibold tracking-tight touch:min-h-11"
           >
-            <Bookmark size={18} className="text-accent" aria-hidden="true" />
+            <img src="/scratch-pad-logo/svg/scratch-pad-icon.svg" alt="" className="size-6" />
             Scratch-Pad
           </NavLink>
           <div className="order-2 ml-auto flex items-center gap-1 sm:order-3 sm:ml-0">

@@ -1,0 +1,28 @@
+<svg viewBox="0 0 1200 512" width="1200" height="512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Scratch-Pad, your personal link library">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;display=swap');
+      .word { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 116px; letter-spacing: -3.5px; fill: #4E2833; }
+      .tag  { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 500; font-size: 30px; fill: #7A4D59; }
+    </style>
+  </defs>
+  <g transform="translate(112 126) scale(0.5078125)">
+    <rect width="512" height="512" rx="112" fill="#C98F9C"/>
+    <g transform="rotate(-6 256 266)">
+      <rect x="148" y="130" width="232" height="296" rx="26" fill="#A86E7C" opacity="0.45"/>
+      <rect x="140" y="118" width="232" height="296" rx="26" fill="#F6ECE9"/>
+      <path d="M140 174 V144 Q140 118 166 118 H346 Q372 118 372 144 V174 Z" fill="#E8CDD2"/>
+      <rect x="189" y="100" width="14" height="40" rx="7" fill="#8A4E5E"/>
+      <rect x="249" y="100" width="14" height="40" rx="7" fill="#8A4E5E"/>
+      <rect x="309" y="100" width="14" height="40" rx="7" fill="#8A4E5E"/>
+      <g transform="rotate(-45 256 296)" fill="none" stroke="#8A4E5E" stroke-width="20">
+        <rect x="166" y="264" width="120" height="64" rx="32"/>
+        <rect x="226" y="264" width="120" height="64" rx="32"/>
+      </g>
+      <path d="M316 430 L388 358 L388 430 Z" fill="#C98F9C"/>
+      <path d="M332 414 L372 374 L340 374 Q332 374 332 382 Z" fill="#DDB6BD"/>
+    </g>
+  </g>
+  <text class="word" x="428" y="270">Scratch-Pad</text>
+  <text class="tag" x="432" y="326">Your personal link library</text>
+</svg>

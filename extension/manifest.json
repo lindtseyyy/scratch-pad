@@ -4,7 +4,12 @@
   "version": "1.0.1",
   "minimum_chrome_version": "121",
   "description": "Save the current page or a link to Scratch-Pad.",
-  "icons": { "64": "icons/icon-64.png", "192": "icons/icon-192.png" },
+  "icons": {
+    "32": "icons/scratch-pad-icon-32.png",
+    "64": "icons/scratch-pad-icon-64.png",
+    "128": "icons/scratch-pad-icon-128.png",
+    "192": "icons/scratch-pad-icon-192.png"
+  },
   "action": { "default_title": "Save to Scratch-Pad" },
   "background": {
     "service_worker": "background.js",

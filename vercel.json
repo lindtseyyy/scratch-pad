@@ -15,7 +15,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!assets/|favicon.svg|sw.js|workbox-|manifest.webmanifest|pwa-|maskable-|apple-touch-).*)",
+      "source": "/((?!assets/|favicon.svg|sw.js|workbox-|manifest.webmanifest|pwa-|maskable-|apple-touch-|scratch-pad-logo/).*)",
       "destination": "/index.html"
     }
   ]

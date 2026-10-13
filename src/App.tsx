@@ -1,7 +1,6 @@
 import { Component, lazy, Suspense, type ErrorInfo, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Bookmark } from 'lucide-react'
 import { configurationError } from './lib/supabase'
 import { AuthProvider, useAuth } from './features/auth/AuthProvider'
 import { ThemeProvider } from './hooks/useTheme'
@@ -74,7 +73,7 @@ export default function App() {
     return (
       <ThemeProvider>
         <main className="mx-auto max-w-lg px-6 py-20">
-          <Bookmark className="mb-5 text-accent" aria-hidden="true" />
+          <img src="/scratch-pad-logo/svg/scratch-pad-icon.svg" alt="" className="mb-5 size-8" />
           <h1 className="text-2xl font-semibold">Connect your Scratch-Pad.</h1>
           <p className="mt-3 text-muted">{configurationError}</p>
           <p className="mt-5 leading-relaxed text-secondary">

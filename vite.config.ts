@@ -22,16 +22,38 @@ export default defineConfig({
         background_color: '#f8f8f7',
         theme_color: '#f8f8f7',
         icons: [
-          { src: '/pwa-64x64.png', sizes: '64x64', type: 'image/png' },
-          { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
           {
-            src: '/maskable-icon-512x512.png',
+            src: '/scratch-pad-logo/png/scratch-pad-icon-64.png',
+            sizes: '64x64',
+            type: 'image/png',
+          },
+          {
+            src: '/scratch-pad-logo/png/scratch-pad-icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/scratch-pad-logo/png/scratch-pad-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: '/scratch-pad-logo/png/scratch-pad-maskable-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
+            src: '/scratch-pad-logo/png/scratch-pad-maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
           },
-          { src: '/apple-touch-icon-180x180.png', sizes: '180x180', type: 'image/png' },
+          {
+            src: '/scratch-pad-logo/png/apple-touch-icon.png',
+            sizes: '180x180',
+            type: 'image/png',
+          },
         ],
         share_target: {
           action: '/share',
@@ -42,15 +64,23 @@ export default defineConfig({
           {
             name: 'Add a link',
             url: '/?add=1',
-            icons: [{ src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' }],
+            icons: [
+              {
+                src: '/scratch-pad-logo/png/scratch-pad-icon-192.png',
+                sizes: '192x192',
+                type: 'image/png',
+              },
+            ],
           },
         ],
       },
+      includeAssets: ['scratch-pad-logo/svg/scratch-pad-icon.svg'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globIgnores: ['scratch-pad-logo/**'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [
-          /^\/(?:assets\/|sw\.js|workbox-|manifest\.webmanifest|favicon\.|pwa-|maskable-|apple-touch-)/,
+          /^\/(?:assets\/|sw\.js|workbox-|manifest\.webmanifest|favicon\.|pwa-|maskable-|apple-touch-|scratch-pad-logo\/)/,
         ],
         cleanupOutdatedCaches: true,
       },

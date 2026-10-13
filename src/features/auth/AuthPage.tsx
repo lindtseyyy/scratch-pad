@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import { Bookmark } from 'lucide-react'
 import { useAuth } from './AuthProvider'
 import { authEmailDomain, getSupabase } from '../../lib/supabase'
 import { isValidUsername, usernameToEmail } from '../../lib/auth-email'
@@ -64,7 +63,7 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
           to="/"
           className="mb-6 flex items-center gap-2.5 text-lg font-semibold tracking-tight touch:min-h-11 sm:mb-10"
         >
-          <Bookmark size={21} className="text-accent" aria-hidden="true" />
+          <img src="/scratch-pad-logo/svg/scratch-pad-icon.svg" alt="" className="size-7" />
           Scratch-Pad
         </Link>
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-8">
