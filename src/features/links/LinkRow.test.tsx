@@ -156,7 +156,7 @@ describe('LinkRow', () => {
     expect(title?.className).toContain('truncate')
     expect(title?.textContent).toBe(link.title)
     expect(container.textContent).toContain('github.com')
-    expect(container.querySelector('span[aria-label="3 tags"]')?.textContent).toBe('3')
+    expect(container.textContent).toContain('3 tags')
   })
 
   it('opens a bottom sheet with copy, share, edit, delete and tag filters', async () => {

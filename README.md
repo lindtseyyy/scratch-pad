@@ -56,7 +56,7 @@ The local API is on port 54321 and Postgres on 54322. Local Supabase uses the sa
 
 ## What works
 
-- Username signup/login, persistent sessions, protected routes, logout, and verified password changes.
+- Username signup/login, persistent sessions, protected routes, logout, and verified password changes. Settings shows your username and the date you joined (“Member since”).
 - Quick add, URL normalization, editable source detection, readable fallback titles, optional notes, and duplicate notices.
 - Transactional link/tag saves, edit and confirmed delete, exact local timestamps, and bordered entries with 20-link pages. Previous/Next navigation survives reloads and browser history; changing a filter returns to page 1.
 - Inline tag creation/autocomplete and a tag management page with usage counts, rename, and delete without removing links.

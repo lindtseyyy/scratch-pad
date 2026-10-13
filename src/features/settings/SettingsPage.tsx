@@ -79,6 +79,20 @@ export function SettingsPage() {
               </p>
             )}
           </div>
+          {session && (
+            <div className="mt-4">
+              <p className="text-xs max-sm:text-[11px] text-muted">Member since</p>
+              <p className="mt-1 font-medium max-sm:text-sm">
+                <time dateTime={session.user.created_at}>
+                  {new Date(session.user.created_at).toLocaleDateString(undefined, {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </time>
+              </p>
+            </div>
+          )}
         </section>
         <section aria-labelledby="password-heading" className="p-4 sm:p-6">
           <h2 id="password-heading" className="text-sm font-medium sm:text-base">

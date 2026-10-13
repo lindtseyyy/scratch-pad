@@ -194,10 +194,12 @@ export function LibraryPage() {
                 Good finds. All in one place.
               </p>
             </div>
-            <div className="pt-1.5 text-xs max-sm:text-[11px] text-muted">
-              {total.data !== undefined &&
-                `${total.data} saved ${total.data === 1 ? 'link' : 'links'}`}
-            </div>
+            {total.data !== undefined && (
+              <p className="mt-0.5 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-line bg-accent-soft px-2.5 py-0.5 text-xs text-secondary max-sm:text-[11px] sm:mt-1">
+                <span className="font-semibold tabular-nums text-accent">{total.data}</span> saved{' '}
+                {total.data === 1 ? 'link' : 'links'}
+              </p>
+            )}
           </div>
           <form className="mb-2 flex gap-2 sm:mb-6" onSubmit={add}>
             <label htmlFor="quick-url" className="sr-only">

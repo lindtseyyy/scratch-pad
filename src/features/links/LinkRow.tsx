@@ -174,11 +174,10 @@ export function LinkRow({
         </span>
         {sortedTags.length > 0 && (
           <span
-            className="shrink-0 rounded-full bg-soft px-1.5 py-0.5 text-[11px] leading-4 text-muted"
+            className="shrink-0 whitespace-nowrap rounded-full bg-soft px-1.5 py-0.5 text-[11px] leading-4 text-muted"
             title={sortedTags.map((tag) => tag.name).join(', ')}
-            aria-label={`${sortedTags.length} ${sortedTags.length === 1 ? 'tag' : 'tags'}`}
           >
-            {sortedTags.length}
+            {sortedTags.length} {sortedTags.length === 1 ? 'tag' : 'tags'}
           </span>
         )}
         {sheetTrigger}
